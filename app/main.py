@@ -124,6 +124,8 @@ app.include_router(locks.router, prefix="/api", dependencies=API_GUARD)
 
 
 @app.get("/health", include_in_schema=False)   # include_in_schema=False: /docs 목록에서 숨김
+@app.get("/api/admin/appready", include_in_schema=False)   # 회사 플랫폼(HCP)이 두드리는 준비 확인 주소
+@app.get("/app/ready", include_in_schema=False)            # (HCP 설정에 따라 이 주소를 쓰기도 함)
 async def liveness():
     """
     "프로세스가 살아 있는가" 만 답합니다. DB 는 보지 않습니다 (항상 {"ok": true}).

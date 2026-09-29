@@ -8,8 +8,8 @@ app.py — 서버를 켜는 "시작 버튼".
     python app.py                       → http://localhost:8000
     PORT=9000 python app.py             → 포트 바꾸기 (컨테이너 플랫폼이 PORT 를 정해 주면 그대로 씀)
 
-이 파일은 DB 를 만들지 않습니다. DB 접속 주소는 환경변수(DATABASE_URL 등, app/config.py 참고)로 받고,
-표(테이블)는 배포 전에 `python -m app.tools.apply_schema` 로 한 번 만들어 두어야 합니다.
+서버를 켜기 전에 DB 표를 먼저 만들거나 최신 모양으로 고칩니다 (app/tools/apply_schema.py — 몇 번 실행해도 안전).
+DB 접속 주소는 환경변수(DATABASE_URL 등, app/config.py 참고)로 받습니다.
 (내 PC 에서 DB 없이 그냥 띄워 보려면 app/tools/dev_server.py 를 쓰세요 — 내장 PostgreSQL 까지 같이 켜 줍니다)
 
 ※ 파일 이름이 app.py 이고 폴더 이름도 app/ 이라 헷갈릴 수 있는데, 파이썬은 "from app.main import ..." 에서
@@ -32,6 +32,12 @@ def main() -> None:
     # 그래서 윈도우에서만 "Selector" 방식으로 바꿔 줍니다. 맥·리눅스에서는 이 줄이 그냥 지나갑니다.
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    # DB 표 만들기/갱신 → 끝난 뒤에 서버를 켭니다. 접속 실패 등 오류가 나면 서버를 켜지 않고 종료합니다.
+    from app.config import get_settings
+    from app.tools.apply_schema import apply_schema
+
+    apply_schema(get_settings().database_url)
 
     # 포트: 환경변수 PORT 가 있으면 그 값, 없으면 8000. (컨테이너 플랫폼은 보통 PORT 를 정해서 넣어 줍니다)
     port = int(os.environ.get("PORT", "8000"))

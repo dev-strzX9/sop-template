@@ -6,7 +6,7 @@
 #
 # 회사 환경 대응 포인트
 #   - 비루트(root 아님) 사용자로 실행 (보안 규정)
-#   - 포트는 PORT 환경변수로 (플랫폼이 정해 주는 포트를 그대로 씀. 기본 8000)
+#   - 포트는 PORT 환경변수로 (플랫폼이 정해 주는 포트를 그대로 씀. 기본 5000)
 #   - 앞단 프록시(SSO/로드밸런서)가 붙이는 X-Forwarded-* 헤더를 믿도록 --proxy-headers
 #   - HEALTHCHECK 로 /health (DB 를 보지 않는 생존 확인) 를 주기적으로 두드림
 #   - DB 접속 정보는 이미지에 넣지 않고 환경변수(DATABASE_URL 또는 PGHOST 등)로 받음
@@ -32,12 +32,12 @@ COPY sql/ ./sql/
 RUN useradd --create-home --uid 10001 app && chown -R app:app /srv
 USER app
 
-# 6. 서버가 쓰는 포트. 플랫폼이 PORT 환경변수를 주면 그 값을, 없으면 8000 을 씁니다.
+# 6. 서버가 쓰는 포트. 플랫폼이 PORT 환경변수를 주면 그 값을, 없으면 5000(회사 규칙)을 씁니다.
 #    PYTHONUNBUFFERED=1: 파이썬이 로그를 모아 뒀다 한꺼번에 내보내지 않고 바로바로 출력하게 합니다.
 #    (컨테이너 로그 수집기가 실시간으로 볼 수 있고, 갑자기 꺼져도 마지막 로그가 사라지지 않습니다)
-ENV PORT=8000 \
+ENV PORT=5000 \
     PYTHONUNBUFFERED=1
-EXPOSE 8000
+EXPOSE 5000
 
 # 7. 생존 확인: 30초마다 /health 를 열어 봅니다. 3번 연속 실패하면 플랫폼이 상자를 다시 켭니다.
 #    (curl 이 없는 slim 이미지라 파이썬으로 확인)

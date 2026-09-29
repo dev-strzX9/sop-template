@@ -1,0 +1,42 @@
+# 로컬 개발용 PostgreSQL (앱은 Mac 에서 python app.py 로 실행하고, DB 만 도커로 띄웁니다)
+#
+#   docker compose up -d --wait        DB 켜기 (처음이면 이미지 내려받기 + 빈 DB 만들기, 준비될 때까지 기다림)
+#   python -m app.tools.apply_schema   표 만들기 (처음 한 번, 또는 스키마가 바뀌었을 때)
+#   docker compose down                DB 끄기 (데이터는 남음)
+#   docker compose down -v             DB 끄고 데이터(pgdata 볼륨)까지 삭제 → 빈 DB 부터 다시
+#
+# 계정/비밀번호/DB 이름은 app/config.py 의 기본 주소(postgresql://postgres:postgres@localhost:5432/sop)와 같아서
+# DATABASE_URL 을 따로 주지 않아도 앱이 바로 붙습니다. 회사 DB 버전이 다르면 image 태그만 바꾸세요.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sop
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sop"]
+      interval: 2s
+      retries: 15
+
+  # 앱 컨테이너 — 배포 전 "회사 컨테이너에서도 뜨는지" 확인용. 평소 개발은 .venv 로 python app.py.
+  # profiles 때문에 그냥 up 하면 안 켜지고, --profile app 을 줘야 켜집니다:
+  #   docker compose --profile app up -d --build     (--build: 코드를 다시 복사해 이미지를 새로 만듦)
+  app:
+    profiles: ["app"]
+    build: .                    # 이 폴더의 Dockerfile 대로 이미지를 직접 만든다 (코드가 이미지 안으로 복사됨)
+    ports:
+      - "8000:8000"
+    environment:
+      # 컨테이너 안에서 localhost 는 "앱 컨테이너 자신" 이라, DB 는 서비스 이름(db)으로 찾아갑니다
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/sop
+    depends_on:
+      db:
+        condition: service_healthy   # DB 가 준비된(healthy) 뒤에 앱을 켠다
+
+volumes:
+  pgdata:

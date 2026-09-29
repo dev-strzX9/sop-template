@@ -22,6 +22,8 @@ import sys
 
 import uvicorn
 
+import app  # noqa: F401  app/__init__.py 가 .env 를 환경변수로 올립니다 (아래 PORT 도 .env 에서 읽히도록 먼저 import)
+
 
 def main() -> None:
     """환경변수를 읽어 uvicorn 을 켭니다. 이 함수가 끝나는 순간(Ctrl+C 등) 서버도 꺼집니다."""

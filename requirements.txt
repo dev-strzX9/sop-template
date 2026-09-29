@@ -1,6 +1,7 @@
 # 실행에 필요한 라이브러리.  설치:  pip install -r requirements.txt
 fastapi>=0.115
 uvicorn[standard]>=0.30
+python-dotenv>=1.0          # .env 파일 읽기 (app/__init__.py)
 psycopg[binary]>=3.2
 psycopg-pool>=3.2
 pydantic>=2.7

@@ -43,7 +43,7 @@ EXPOSE 5000
 # 7. 생존 확인: 30초마다 /health 를 열어 봅니다. 3번 연속 실패하면 플랫폼이 상자를 다시 켭니다.
 #    (curl 이 없는 slim 이미지라 파이썬으로 확인)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('PORT','8000') + '/health', timeout=4)" || exit 1
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('PORT','5000') + '/health', timeout=4)" || exit 1
 
 # 8. 상자가 켜지면 실행할 명령: python app.py (회사 규칙과 같은 모양)
 #    ENTRYPOINT = "이 상자는 무조건 이 프로그램을 돌린다" 는 고정 명령. 포트·프록시 설정은 app.py 안에서 환경변수로 읽습니다.

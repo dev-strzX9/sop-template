@@ -3,8 +3,8 @@
 --  PostgreSQL 15+ 권장 (17 확인).  gen_random_uuid()는 13+ 기본 내장.
 --
 --  이 파일은 "새 설치" 용 전체 스키마입니다.
---    - 빈 DB 에 한 번 실행하면 모든 표가 만들어집니다.  (python -m app.tools.apply_schema)
---    - 이미 표가 있는 DB 에는 이 파일 대신 sql/migrations/*.sql 을 이름순으로 실행합니다.
+--    - 빈 DB 에 한 번 실행하면 모든 표가 만들어집니다.  (python -m app.core.apply_schema)
+--    - 이미 표가 있는 DB 에는 이 파일 대신 sql/sop/migrations/*.sql 을 이름순으로 실행합니다.
 --      (apply_schema 도구가 알아서 구분합니다)
 --
 --  구조 한눈에:

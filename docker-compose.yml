@@ -1,11 +1,11 @@
 # 로컬 개발용 PostgreSQL (앱은 Mac 에서 python app.py 로 실행하고, DB 만 도커로 띄웁니다)
 #
 #   docker compose up -d --wait        DB 켜기 (처음이면 이미지 내려받기 + 빈 DB 만들기, 준비될 때까지 기다림)
-#   python -m app.tools.apply_schema   표 만들기 (처음 한 번, 또는 스키마가 바뀌었을 때)
+#   python -m app.core.apply_schema   표 만들기 (처음 한 번, 또는 스키마가 바뀌었을 때)
 #   docker compose down                DB 끄기 (데이터는 남음)
 #   docker compose down -v             DB 끄고 데이터(pgdata 볼륨)까지 삭제 → 빈 DB 부터 다시
 #
-# 계정/비밀번호/DB 이름은 app/config.py 의 기본 주소(postgresql://postgres:postgres@localhost:5432/sop)와 같아서
+# 계정/비밀번호/DB 이름은 app/core/config.py 의 기본 주소(postgresql://postgres:postgres@localhost:5432/sop)와 같아서
 # DATABASE_URL 을 따로 주지 않아도 앱이 바로 붙습니다. 회사 DB 버전이 다르면 image 태그만 바꾸세요.
 services:
   db:

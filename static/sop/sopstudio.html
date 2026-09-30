@@ -969,7 +969,7 @@ body.studio-home .home-view{display:block}
 .home-card .home-meta{font-size:12px;color:#8e9197}.home-card .home-meta b{display:inline-block;background:#eeeeef;border-radius:5px;padding:1px 6px;margin-right:6px;color:#666970;font-weight:600}
 .home-empty{color:#81858c;border:1px dashed #ccced1;border-radius:12px;background:#fbfbfc;padding:50px 20px;text-align:center;line-height:1.8}
 
-/* ===== 템플릿 공통 테마 — 순서도 프레임(static/flowchart.html 의 buildFrameItems)과 같은 색·선 =====
+/* ===== 템플릿 공통 테마 — 순서도 프레임(static/sop/flowchart.html 의 buildFrameItems)과 같은 색·선 =====
    남색 잉크 + 주황 포인트, 옅은 회색 안쪽 선, 머리칸은 밝은 띠 + 주황 밑줄, 라벨은 작은 굵은 글씨에 넓은 자간. */
 :root{--t-ink:#292a2d;--t-muted:#70747b;--t-faint:#9a9da3;--t-rule:#e1e3e7;--t-line:#c9ccd1;--t-tint:#f4f5f7;--t-band:#f7f8fa;--t-accent:#df4b31}
 .page-label{background:var(--t-ink);border:0;border-radius:4px;color:#fff;font-size:11px;font-weight:800;letter-spacing:.18em;padding:5px 10px}
@@ -2421,8 +2421,8 @@ body.edit-mode .body-object:hover,body.edit-mode .body-object.selected,body.edit
       try { frame.contentWindow.__setEmbeddedMode?.(editorMode); } catch(e) {}
       if (studioReady) connectStudioFlow(frame);
     });
-    // Flowchart 편집기는 별도 파일(static/flowchart.html). 서버가 하위 경로(ROOT_PATH)에 떠 있어도 찾아가도록 api-base 를 앞에 붙인다.
-    frame.src = readApiBase() + '/static/flowchart.html?id=' + encodeURIComponent(instanceId);
+    // Flowchart 편집기는 별도 파일(static/sop/flowchart.html). 서버가 하위 경로(ROOT_PATH)에 떠 있어도 찾아가도록 api-base 를 앞에 붙인다.
+    frame.src = readApiBase() + '/static/sop/flowchart.html?id=' + encodeURIComponent(instanceId);
     wrap.appendChild(frame); page.appendChild(wrap); block.appendChild(page); attachToolbarActions(block); canvas.appendChild(block); updateLabels();
     return block;
   }
@@ -3794,7 +3794,7 @@ body.edit-mode .body-object:hover,body.edit-mode .body-object.selected,body.edit
 
   // 사용자 이름을 HTTP 헤더(X-User)에 넣을 때의 모양. 헤더 값에는 영문(ISO-8859-1)만 허용되어 한글 이름을 그대로 넣으면
   // fetch 가 요청도 보내기 전에 실패한다. 그래서 encodeURIComponent 로 감싸 보내고(홍길동 → %ED%99%8D%EA%B8%B8%EB%8F%99),
-  // 서버(app/deps.py)가 urllib.parse.unquote 로 되돌린다. 영문 이름은 감싸도 그대로다.
+  // 서버(app/core/deps.py)가 urllib.parse.unquote 로 되돌린다. 영문 이름은 감싸도 그대로다.
   function userHeaderValue() { return encodeURIComponent(currentUser); }
 
   // 서버에 요청을 보내는 공통 함수. method = 'GET' | 'PUT' | 'POST' | 'DELETE', path = '/api/...', body = 보낼 JSON(없으면 생략)

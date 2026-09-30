@@ -8,9 +8,8 @@ app.py — 서버를 켜는 "시작 버튼".
     python app.py                       → http://localhost:8000
     PORT=9000 python app.py             → 포트 바꾸기 (컨테이너 플랫폼이 PORT 를 정해 주면 그대로 씀)
 
-서버를 켜기 전에 DB 표를 먼저 만들거나 최신 모양으로 고칩니다 (app/tools/apply_schema.py — 몇 번 실행해도 안전).
-DB 접속 주소는 환경변수(DATABASE_URL 등, app/config.py 참고)로 받습니다.
-(내 PC 에서 DB 없이 그냥 띄워 보려면 app/tools/dev_server.py 를 쓰세요 — 내장 PostgreSQL 까지 같이 켜 줍니다)
+서버를 켜기 전에 DB 표를 먼저 만들거나 최신 모양으로 고칩니다 (app/core/apply_schema.py — 몇 번 실행해도 안전).
+DB 접속 주소는 환경변수(DATABASE_URL 등, app/core/config.py 참고)로 받습니다.
 
 ※ 파일 이름이 app.py 이고 폴더 이름도 app/ 이라 헷갈릴 수 있는데, 파이썬은 "from app.main import ..." 에서
    같은 이름이 있으면 폴더(app/)를 먼저 찾으므로 문제없이 동작합니다.
@@ -34,8 +33,8 @@ def main() -> None:
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # DB 표 만들기/갱신 → 끝난 뒤에 서버를 켭니다. 접속 실패 등 오류가 나면 서버를 켜지 않고 종료합니다.
-    from app.config import get_settings
-    from app.tools.apply_schema import apply_schema
+    from app.core.config import get_settings
+    from app.core.apply_schema import apply_schema
 
     apply_schema(get_settings().database_url)
 

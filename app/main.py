@@ -4,14 +4,14 @@ main.py — FastAPI 앱의 출발점.
 여기서 하는 일
   1. 앱이 켜지고 꺼질 때 DB 연결 풀을 열고 닫는다 (lifespan)
   2. 요청마다 로그 한 줄을 남기고, 너무 큰 요청은 413으로 막는다 (middleware)
-  3. 오류를 한 가지 JSON 모양으로 통일한다 (errors.py)
-  4. 기능별 라우터(routers/*.py)를 /api 아래에 붙인다. 모든 API 는 current_user 를 거친다 (API_GUARD)
+  3. 오류를 한 가지 JSON 모양으로 통일한다 (core/errors.py)
+  4. 업무별 라우터(app/sop/ ...)를 /api 아래에 붙인다. 모든 API 는 current_user 를 거친다 (API_GUARD)
   5. /health (DB 안 봄, 플랫폼 생존 확인용) 와 /api/health (DB 확인. DB 가 죽어 있으면 503) 를 둔다
   6. 편집기 HTML 파일을 "/" 에서 보여 준다. 이때 <head> 바로 뒤에 <meta name="api-base" content="{ROOT_PATH}"> 를
      끼워 넣어, 서버가 "/sop" 같은 접두어 뒤에서 돌 때 프론트가 API 주소 앞에 그 접두어를 붙일 수 있게 한다.
 
-실행:  python app.py  (회사 컨테이너 규칙. 내 PC 에서 DB 없이 띄우려면 python -m app.tools.dev_server)
-회사 환경: ROOT_PATH=/sop 처럼 접두어 뒤에서 돌 때는 환경변수만 주면 됩니다 (config.py 참고).
+실행:  python app.py  (회사 컨테이너 규칙)
+회사 환경: ROOT_PATH=/sop 처럼 접두어 뒤에서 돌 때는 환경변수만 주면 됩니다 (core/config.py 참고).
 
 처음 읽는 분께: async / await / Depends / yield 같은 낯선 문법은 README 의 "코드 읽기 전에" 절에 한 줄씩 설명해 두었습니다.
 """
@@ -28,12 +28,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import db
-from app.config import get_settings, mask_password
-from app.deps import current_user
-from app.errors import error_body, install_error_handlers
-from app.routers import locks, sops, versions
-from app.schemas import HealthResponse
+from app.core import db
+from app.core.config import get_settings, mask_password
+from app.core.deps import current_user
+from app.core.errors import error_body, install_error_handlers
+from app.core.schemas import HealthResponse
+from app.sop import router as sop_router
 
 # 앱을 만들 때 한 번 읽는 값(_settings). 요청을 처리하는 함수 안에서는 get_settings() 를 다시 불러서
 # 테스트가 환경변수를 바꿔 끼울 수 있게 합니다 (config.py 의 get_settings 설명 참고).
@@ -118,9 +118,9 @@ if _settings.cors_origins:
 # API_GUARD: 모든 API 가 current_user(deps.py)를 거칩니다. 지금은 사용자 이름을 읽기만 하지만,
 # 나중에 그 함수에서 "허용되지 않은 사용자면 401" 을 던지면 API 전체가 한 번에 보호됩니다.
 API_GUARD = [Depends(current_user)]
-app.include_router(sops.router, prefix="/api", dependencies=API_GUARD)
-app.include_router(versions.router, prefix="/api", dependencies=API_GUARD)
-app.include_router(locks.router, prefix="/api", dependencies=API_GUARD)
+# 업무별 라우터. 새 업무(OPL, 주간보고 ...)는 app/<업무>/__init__.py 에 router 를 만들고 여기 한 줄 추가합니다.
+# (SOP 는 기존 주소 /api/sops/... 를 그대로 쓰려고 prefix 가 /api 입니다. 새 업무는 /api/opl 처럼 업무 이름을 붙이세요)
+app.include_router(sop_router, prefix="/api", dependencies=API_GUARD)
 
 
 @app.get("/health", include_in_schema=False)   # include_in_schema=False: /docs 목록에서 숨김

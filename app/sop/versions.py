@@ -16,12 +16,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from psycopg import AsyncConnection
 
-from app.db import get_conn
-from app.errors import ApiError
-from app.refs import load_ref_docs
+from app.core.db import get_conn
+from app.core.errors import ApiError
+from app.sop.refs import load_ref_docs
 # "문서 있는지 확인(404)" 과 "살아 있는 잠금 찾기" 는 여러 라우터가 같이 쓰므로 common.py 에서 가져옵니다
-from app.routers.common import content_with_current_sop_no, find_active_lock, get_document_or_404
-from app.schemas import DocumentOpen, VersionSummary
+from app.sop.common import content_with_current_sop_no, find_active_lock, get_document_or_404
+from app.sop.schemas import DocumentOpen, VersionSummary
 
 router = APIRouter(tags=["versions"])
 

@@ -112,17 +112,17 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-si
 <li class="grp">2. 백엔드 파일별</li>
 <li><a href="#f-app">app.py</a></li>
 <li><a href="#f-main">app/main.py</a></li>
-<li><a href="#f-config">app/config.py</a></li>
-<li><a href="#f-db">app/db.py</a></li>
-<li><a href="#f-deps">app/deps.py</a></li>
-<li><a href="#f-errors">app/errors.py</a></li>
-<li><a href="#f-schemas">app/schemas.py</a></li>
-<li><a href="#f-derive">app/derive.py</a></li>
-<li><a href="#f-refs">app/refs.py</a></li>
-<li><a href="#f-common">routers/common.py</a></li>
-<li><a href="#f-sops">routers/sops.py</a></li>
-<li><a href="#f-versions">routers/versions.py</a></li>
-<li><a href="#f-locks">routers/locks.py</a></li>
+<li><a href="#f-config">app/core/config.py</a></li>
+<li><a href="#f-db">app/core/db.py</a></li>
+<li><a href="#f-deps">app/core/deps.py</a></li>
+<li><a href="#f-errors">app/core/errors.py</a></li>
+<li><a href="#f-schemas">app/sop/schemas.py</a></li>
+<li><a href="#f-derive">app/sop/derive.py</a></li>
+<li><a href="#f-refs">app/sop/refs.py</a></li>
+<li><a href="#f-common">sop/common.py</a></li>
+<li><a href="#f-sops">sop/sops.py</a></li>
+<li><a href="#f-versions">sop/versions.py</a></li>
+<li><a href="#f-locks">sop/locks.py</a></li>
 <li><a href="#f-tools">tools/apply_schema.py</a></li>
 </ol></nav>
 <main>
@@ -262,10 +262,10 @@ ON DELETE 규칙
 <p>미사용 인덱스는 저장할 때마다 갱신 비용만 듭니다. "나중에 검색 기능이 생길 때" 를 위해 남겨 둔 것들이며, 지울지는 선택입니다.</p>
 
 <h3 id="d7">1.7 스키마 적용과 마이그레이션</h3>
-<p><code>python -m app.tools.apply_schema</code> 하나로 두 상황을 처리합니다.</p>
+<p><code>python -m app.core.apply_schema</code> 하나로 두 상황을 처리합니다.</p>
 <ul>
-<li><b>빈 DB</b> (표가 없음) → <code>sql/sop_schema.sql</code> 전체 실행. 새 설치.</li>
-<li><b>표가 이미 있음</b> → <code>sql/migrations/*.sql</code> 을 이름순(001, 002…)으로 전부 실행. 각 파일은 <code>IF NOT EXISTS</code> / <code>IF EXISTS</code> 로 몇 번 실행해도 안전(멱등).</li>
+<li><b>빈 DB</b> (표가 없음) → <code>sql/sop/schema.sql</code> 전체 실행. 새 설치.</li>
+<li><b>표가 이미 있음</b> → <code>sql/sop/migrations/*.sql</code> 을 이름순(001, 002…)으로 전부 실행. 각 파일은 <code>IF NOT EXISTS</code> / <code>IF EXISTS</code> 로 몇 번 실행해도 안전(멱등).</li>
 </ul>
 <div class="tbl"><table>
 <thead><tr><th>파일</th><th>하는 일</th></tr></thead>
@@ -293,23 +293,23 @@ ON DELETE 규칙
 <div class="fn"><p class="sig"><span class="ep">liveness()</span>  GET /health</p><p>항상 <code>{"ok": true}</code>. DB 를 보지 않습니다. 컨테이너 플랫폼이 몇 초마다 두드리는 용도라, DB 가 잠깐 흔들려도 서버를 죽이지 않게.</p></div>
 <div class="fn"><p class="sig"><span class="ep">health(response)</span>  GET /api/health</p><p><code>db.ping()</code> 으로 <code>SELECT 1</code> 을 날려 봅니다. 성공이면 200 <code>{"ok":true,"db":"up"}</code>, 실패면 503 <code>{"ok":false,"db":"down"}</code>. 배포 후 제일 먼저 열어 보는 주소.</p></div>
 <div class="fn"><p class="sig">inject_api_base(html, root_path) → str</p><p>편집기 HTML 의 <code>&lt;head&gt;</code> 바로 뒤에 <code>&lt;meta name="api-base" content="{ROOT_PATH}"&gt;</code> 를 끼워 넣습니다. 서버가 <code>/sop</code> 같은 접두어 뒤에서 돌 때 프론트가 API 주소 앞에 그걸 붙이도록.</p><p class="who">부르는 곳: index().</p></div>
-<div class="fn"><p class="sig"><span class="ep">index()</span>  GET /</p><p><code>static/SOP_STUDIO.html</code> 을 읽어 위 meta 를 끼워 돌려줍니다. 파일이 없으면 404 <code>static_not_found</code>.</p></div>
+<div class="fn"><p class="sig"><span class="ep">index()</span>  GET /</p><p><code>static/sop/sopstudio.html</code> 을 읽어 위 meta 를 끼워 돌려줍니다. 파일이 없으면 404 <code>static_not_found</code>.</p></div>
 <p style="margin-top:10px;font-size:14px">라우터 3개는 전부 <code>prefix="/api"</code> 와 <code>dependencies=[Depends(current_user)]</code> 로 등록됩니다. 나중에 <code>current_user</code> 에서 401 을 던지면 API 전체가 한 번에 보호됩니다.</p>
 </div>
 
 <div class="file" id="f-config">
-<div class="fh"><code>app/config.py</code><span class="lines">149줄</span></div>
+<div class="fh"><code>app/core/config.py</code><span class="lines">149줄</span></div>
 <p class="role">환경변수를 읽어 <code>Settings</code> 상자에 담습니다. 코드에 DB 주소를 직접 적지 않아서 같은 코드를 개발 PC 와 회사 컨테이너에서 값만 바꿔 씁니다.</p>
 <div class="fn"><p class="sig">_env_int(name, default) → int</p><p>환경변수를 정수로. 비었거나 숫자가 아니면 기본값.</p></div>
 <div class="fn"><p class="sig">_env_prepare_threshold() → int | None</p><p><code>DB_PREPARE_THRESHOLD</code>. 빈 문자열이나 0 이면 None = prepared statement 를 안 만듦 (PgBouncer 트랜잭션 풀링 대응).</p></div>
 <div class="fn"><p class="sig">resolve_database_url() → str</p><p>DB 접속 주소를 정합니다. 우선순위: <code>DATABASE_URL</code> → <code>PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE</code> 다섯 개로 조립 → 로컬 기본값 <code>postgresql://postgres:postgres@localhost:5432/sop</code>. 조립엔 psycopg 의 <code>make_conninfo</code> 를 써서 비밀번호에 특수문자가 있어도 안전.</p></div>
 <div class="fn"><p class="sig">mask_password(conninfo) → str</p><p>비밀번호만 <code>****</code> 로 가린 접속 문자열. 로그에 찍을 때.</p></div>
-<div class="fn"><p class="sig">class Settings</p><p>읽는 값: database_url, db_session_options(기본 <code>-c timezone=UTC</code>), db_connect_timeout(30), pool_min_size(2), pool_max_size(10), db_prepare_threshold, root_path, user_header(<code>X-User</code>), log_level(INFO), cors_origins, static_dir(<code>static</code>), static_index(<code>SOP_STUDIO.html</code>), max_content_bytes(20MB).</p></div>
+<div class="fn"><p class="sig">class Settings</p><p>읽는 값: database_url, db_session_options(기본 <code>-c timezone=UTC</code>), db_connect_timeout(30), pool_min_size(2), pool_max_size(10), db_prepare_threshold, root_path, user_header(<code>X-User</code>), log_level(INFO), cors_origins, static_dir(<code>static</code>), static_index(<code>sop/sopstudio.html</code>), max_content_bytes(20MB).</p></div>
 <div class="fn"><p class="sig">get_settings() → Settings</p><p>부를 때마다 새로 읽습니다. 테스트에서 환경변수를 바꿔 끼우기 쉽게.</p><p class="who">부르는 곳: main.py, deps.py, apply_schema.py.</p></div>
 </div>
 
 <div class="file" id="f-db">
-<div class="fh"><code>app/db.py</code><span class="lines">137줄</span></div>
+<div class="fh"><code>app/core/db.py</code><span class="lines">137줄</span></div>
 <p class="role">DB 연결 풀. 연결은 전화선 하나, 풀은 전화선을 미리 몇 개 열어 두고 빌려 쓰는 창구입니다. 파일 전체에 <code>pool</code> 변수 하나가 있고 <code>open_pool</code> 이 채웁니다.</p>
 <div class="fn"><p class="sig">open_pool(database_url, min_size, max_size, session_options, connect_timeout, prepare_threshold)</p><p>앱 시작 시 한 번. <code>AsyncConnectionPool</code> 을 만들고 <code>wait=True</code> 로 실제 접속이 될 때까지 기다립니다. 안 되면 원인을 한국어 로그로 남기고 실패. 연결 설정: <code>row_factory=dict_row</code>(결과를 <code>{"컬럼": 값}</code> 으로), <code>autocommit=True</code>(기본은 자동 저장, 묶을 때만 transaction()), <code>check=check_connection</code>(빌려줄 때마다 살아 있는지 확인), <code>max_lifetime=30분</code>.</p><p class="who">부르는 곳: main.lifespan.</p></div>
 <div class="fn"><p class="sig">close_pool()</p><p>앱 종료 시 한 번. 연결 전부 정리.</p></div>
@@ -318,13 +318,13 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-deps">
-<div class="fh"><code>app/deps.py</code><span class="lines">32줄</span></div>
+<div class="fh"><code>app/core/deps.py</code><span class="lines">32줄</span></div>
 <p class="role">"지금 요청을 보낸 사용자가 누구인지" 하나만 다룹니다. 아직 로그인 기능이 없어 헤더 값을 그대로 믿습니다.</p>
 <div class="fn"><p class="sig">current_user(request) → str  <span class="pill">Depends</span></p><p>헤더 <code>X-User</code>(환경변수 <code>USER_HEADER</code> 로 변경 가능)에서 이름을 꺼냅니다. 브라우저가 한글을 <code>encodeURIComponent</code> 로 감싸 보내므로 <code>unquote</code> 로 되돌립니다. 비면 <code>"anonymous"</code>. main.py 가 모든 라우터에 걸어 두었고, 저장·잠금 함수는 <code>user = Depends(current_user)</code> 로 직접 받기도 합니다.</p></div>
 </div>
 
 <div class="file" id="f-errors">
-<div class="fh"><code>app/errors.py</code><span class="lines">76줄</span></div>
+<div class="fh"><code>app/core/errors.py</code><span class="lines">76줄</span></div>
 <p class="role">어떤 오류든 <code>{ "error": { "code", "message", …추가정보 } }</code> 한 모양으로 내려보냅니다. 프론트가 오류를 한 가지 방식으로만 처리하면 되도록.</p>
 <div class="fn"><p class="sig">class ApiError(status_code, code, message, **extra)</p><p>API 함수 안에서 <code>raise ApiError(409, "version_conflict", "…", current_version_no=4)</code> 처럼 던지는 예외. 추가 정보는 키워드 인자로.</p></div>
 <div class="fn"><p class="sig">error_body(code, message, **extra) → dict</p><p>오류 JSON 본문을 만듭니다. main.py 의 413, 404 응답도 이걸 씁니다.</p></div>
@@ -332,7 +332,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-schemas">
-<div class="fh"><code>app/schemas.py</code><span class="lines">198줄</span></div>
+<div class="fh"><code>app/sop/schemas.py</code><span class="lines">198줄</span></div>
 <p class="role">API 가 주고받는 JSON 의 "모양" 정의. pydantic 모델이라 FastAPI 가 요청을 받으면 자동 검사하고 틀리면 422. 편집기 문서 <code>doc</code> 자체는 <code>dict</code> 로 받아 안을 정의하지 않습니다(프론트가 계속 진화하므로).</p>
 <div class="fn"><p class="sig">to_utc_z(value) → str · UtcDatetime</p><p>시각을 항상 UTC + 끝에 Z 로 (예 <code>2026-09-11T02:30:00Z</code>). DB 세션 시간대가 무엇이든 응답은 같은 모양. <code>UtcDatetime</code> 타입을 쓰면 자동 적용.</p></div>
 <div class="tbl" style="margin-top:10px"><table>
@@ -355,7 +355,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-derive">
-<div class="fh"><code>app/derive.py</code><span class="lines">385줄</span></div>
+<div class="fh"><code>app/sop/derive.py</code><span class="lines">385줄</span></div>
 <p class="role">편집기 JSON(<code>doc</code>)에서 "DB 컬럼에 넣을 값" 만 골라내는 순수 함수 모음. DB 도 웹 프레임워크도 모릅니다. 프론트 JSON 의 키 이름은 이 파일에만 적혀 있습니다.</p>
 <h4>상수</h4>
 <p style="font-size:14px"><code>SOP_DOC_FORMAT = "sop-editor-mock"</code> · <code>VALID_AREAS = ("", "P", "E", "D", "T", "C")</code> · <code>NODE_TYPES = ("start","seq","decision","sop","end")</code> (DB CHECK 와 같아야 함) · <code>SOP_NO_PATTERN = ^[A-Za-z0-9._-]+$</code> · <code>INT4_MIN/MAX</code></p>
@@ -378,7 +378,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-refs">
-<div class="fh"><code>app/refs.py</code><span class="lines">205줄</span></div>
+<div class="fh"><code>app/sop/refs.py</code><span class="lines">205줄</span></div>
 <p class="role">순서도의 "SOP 상자"(다른 SOP 를 가리키는 노드)가 실제 문서와 어떻게 이어지는지. 상자에는 <code>ref_document_id</code>(진짜 연결), <code>sop_id</code>(표시용 번호), <code>sop_name</code>(표시용 이름) 세 값이 있습니다.</p>
 <div class="fn"><p class="sig">_load_documents_by_ids(conn, ids) / _load_documents_by_sop_nos(conn, sop_nos)</p><p>id 목록 / 번호 목록으로 문서를 <b>한 번에</b> 찾아 dict 로. <code>WHERE id = ANY(%s)</code>. 목록이 비면 조회 안 함. 그래서 저장 1회당 DB 조회는 최대 2번.</p></div>
 <div class="fn"><p class="sig">_apply_document(node, found)</p><p>상자에 찾은 문서의 현재 id·번호·이름을 써 넣습니다.</p></div>
@@ -399,7 +399,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-common">
-<div class="fh"><code>app/routers/common.py</code><span class="lines">60줄</span></div>
+<div class="fh"><code>app/sop/common.py</code><span class="lines">60줄</span></div>
 <p class="role">창구 3개가 똑같이 쓰는 도우미. 예전엔 파일마다 복사돼 있어서 404 문구 하나 바꾸려면 네 곳을 고쳐야 했습니다.</p>
 <div class="fn"><p class="sig">get_document_or_404(conn, doc_id) → dict</p><p><code>SELECT id, sop_no, status, current_version_id FROM sop_documents WHERE id = %s</code>. 없으면 404 <code>not_found</code>. 거의 모든 창구가 첫 줄에서 부릅니다.</p></div>
 <div class="fn"><p class="sig">find_active_lock(conn, doc_id) → LockInfo | None</p><p><code>expires_at > now()</code> 인 잠금만 찾습니다. 문서를 열 때 "지금 누가 편집 중인지".</p></div>
@@ -407,7 +407,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-sops">
-<div class="fh"><code>app/routers/sops.py</code><span class="lines">527줄</span></div>
+<div class="fh"><code>app/sop/sops.py</code><span class="lines">527줄</span></div>
 <p class="role">문서의 목록 / 열기 / 저장 / 번호 변경 / 폐기 / 참조 관계. 창구 9개(엔드포인트 8개 + 공용) 와 도우미 4개. 저장 주소가 번호가 아니라 id 인 이유: 번호는 사람이 바꿀 수 있어 번호로 저장하면 "새 문서인지 번호 바꾼 문서인지" 를 구분할 수 없기 때문.</p>
 <div class="fn"><p class="sig">REVIVED_WARNING</p><p>폐기됐던 문서에 저장하면 draft 로 되살리면서 warnings 에 넣는 문구.</p></div>
 <div class="fn"><p class="sig">escape_like(text) → str</p><p>ILIKE 검색어의 <code>% _ \</code> 를 글자 그대로 찾게 이스케이프. 사용자가 SOP_ETCH 라고 치면 SOP-ETCH 도 걸리는 걸 막음.</p></div>
@@ -426,7 +426,7 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-versions">
-<div class="fh"><code>app/routers/versions.py</code><span class="lines">200줄</span></div>
+<div class="fh"><code>app/sop/versions.py</code><span class="lines">200줄</span></div>
 <p class="role">저장할 때마다 쌓인 버전을 보여 줍니다. 읽기만 합니다.</p>
 <div class="fn"><p class="sig"><span class="ep">list_versions(doc_id, conn)</span>  GET /sops/{doc_id}/versions</p><p><code>SELECT version_no, revision, saved_by, saved_at, change_note … ORDER BY version_no DESC</code>. content 는 일부러 안 읽음.</p></div>
 <div class="fn"><p class="sig"><span class="ep">open_version(doc_id, version_no, conn)</span>  GET /sops/{doc_id}/versions/{n}</p><p>특정 번호의 content. 응답 모양은 최신 열기와 같음(DocumentOpen). 없으면 404 <code>version_not_found</code>. 번호 보정·잠금·ref_docs 도 붙임.</p></div>
@@ -437,18 +437,18 @@ ON DELETE 규칙
 </div>
 
 <div class="file" id="f-locks">
-<div class="fh"><code>app/routers/locks.py</code><span class="lines">133줄</span></div>
+<div class="fh"><code>app/sop/locks.py</code><span class="lines">133줄</span></div>
 <p class="role">같은 문서를 두 사람이 동시에 고치지 못하게. 편집 시작 때 잠그고(POST), 편집 중 주기적으로 같은 요청을 다시 보내 연장하며(하트비트), 끝나면 풉니다(DELETE). 만료 시각이 있어 브라우저를 닫아도 저절로 풀립니다.</p>
 <div class="fn"><p class="sig"><span class="ep">acquire_lock(doc_id, body, conn, user)</span>  POST /sops/{doc_id}/lock</p><p>규칙: 잠금 없음 / 내 잠금 / 남의 만료된 잠금 → 잡음(200). 남의 유효한 잠금 → 423 <code>locked</code>. 트랜잭션 안에서 <b>먼저 문서 행을 FOR UPDATE</b>(잠금 행이 아직 없는 문서에 두 사람이 동시에 오면 "없는 줄" 은 잠글 수 없어 둘 다 INSERT 로 가 중복 오류가 나므로, 항상 있는 문서 행에서 줄을 세움) → 잠금 행 FOR UPDATE → 없으면 INSERT, 있으면 UPDATE. 만료 시각은 <code>now() + make_interval(secs => %s)</code>.</p></div>
 <div class="fn"><p class="sig"><span class="ep">release_lock(doc_id, body, user_query, conn, header_user)</span>  DELETE /sops/{doc_id}/lock</p><p>누가 푸는지는 본문 user → <code>?user=</code> → X-User 순(DELETE 에 본문을 못 싣는 도구도 있어서). <code>DELETE … WHERE document_id = %s AND locked_by = %s</code> 라 남의 잠금은 지워지지 않음. 이미 풀려 있어도 200(여러 번 불러도 같은 결과).</p></div>
 </div>
 
 <div class="file" id="f-tools">
-<div class="fh"><code>app/tools/apply_schema.py</code><span class="lines">190줄 · 서버와 별개로 실행</span></div>
-<p class="role">DB 에 표를 만들거나 최신 모양으로 고치는 도구. 책장 조립 설명서. 배포 전에 한 번 <code>python -m app.tools.apply_schema</code>.</p>
+<div class="fh"><code>app/core/apply_schema.py</code><span class="lines">190줄 · 서버와 별개로 실행</span></div>
+<p class="role">DB 에 표를 만들거나 최신 모양으로 고치는 도구. 책장 조립 설명서. 배포 전에 한 번 <code>python -m app.core.apply_schema</code>.</p>
 <div class="fn"><p class="sig">read_sql / strip_trgm / is_trgm_error</p><p>SQL 파일 읽기. pg_trgm 관련 줄만 빼기. 이 오류가 "pg_trgm 이 없어서" 인지 판단.</p></div>
 <div class="fn"><p class="sig">tables_exist(conn) → bool</p><p><code>to_regclass('sop_documents')</code> 로 우리 표가 있는지.</p></div>
-<div class="fn"><p class="sig">list_migration_files() → list[str]</p><p><code>sql/migrations/*.sql</code> 이름순.</p></div>
+<div class="fn"><p class="sig">list_migration_files() → list[str]</p><p><code>sql/sop/migrations/*.sql</code> 이름순.</p></div>
 <div class="fn"><p class="sig">run_sql_file(conn, path) → bool</p><p>파일 하나를 트랜잭션 하나로 실행. pg_trgm 때문에 실패하면 그 줄만 빼고 재시도. 뺐으면 True.</p></div>
 <div class="fn"><p class="sig">apply_schema(database_url, dry_run, log) → dict</p><p>표가 없으면 전체 스키마, 있으면 마이그레이션 전부. <code>--dry-run</code> 이면 보여주기만. 결과 <code>{"mode": "install"|"migrate", "files": […], "trgm_skipped": bool}</code>.</p></div>
 <div class="fn"><p class="sig">drop_and_reinstall(database_url, log)</p><p>테스트 전용. 표를 전부 DROP 하고 다시 설치. 명령줄에서는 일부러 제공하지 않음. (현재 tests/ 폴더가 없어 부르는 곳도 없음)</p></div>

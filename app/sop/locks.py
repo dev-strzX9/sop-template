@@ -15,12 +15,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from psycopg import AsyncConnection
 
-from app.db import get_conn
-from app.deps import current_user
-from app.errors import ApiError
+from app.core.db import get_conn
+from app.core.deps import current_user
+from app.core.errors import ApiError
 # "문서 있는지 확인(404)" 은 여러 라우터가 같이 쓰므로 common.py 에서 가져옵니다
-from app.routers.common import get_document_or_404
-from app.schemas import LockInfo, LockRequest, StatusResponse, UnlockRequest, to_utc_z
+from app.sop.common import get_document_or_404
+from app.core.schemas import to_utc_z
+from app.sop.schemas import LockInfo, LockRequest, StatusResponse, UnlockRequest
 
 router = APIRouter(tags=["locks"])
 

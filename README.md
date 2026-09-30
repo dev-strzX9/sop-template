@@ -8,11 +8,15 @@ SOP Studio 편집기(브라우저)와 그 문서를 PostgreSQL 에 버전 단위
 sop/
   app.py          시작 버튼 — 컨테이너가 켜지면 이 파일이 실행됨 (ENTRYPOINT ["python", "app.py"])
   app/            서버 코드 (FastAPI)
-  static/         편집기 화면 (SOP_STUDIO.html — 서버가 "/" 에서 내려줌)
-  sql/            DB 표 설계도 (sop_schema.sql) + 변경분 (migrations/)
+    main.py       앱 조립 — 업무별 라우터를 붙이고 헬스체크·편집기 화면을 내려줌
+    core/         모든 업무 공통: 설정, DB 연결, 사용자, 오류 모양, DB 표 만들기 도구
+    sop/          SOP 업무: API, 문서 JSON 검사, SOP 간 참조, 요청/응답 모양
+  static/sop/     SOP 편집기 화면 (sopstudio.html — 서버가 "/" 에서 내려줌, flowchart.html — 순서도 편집기)
+  sql/sop/        SOP DB 표 설계도 (schema.sql) + 변경분 (migrations/)
   requirements.txt  필요한 파이썬 라이브러리 (실행용만)
   Dockerfile      컨테이너 이미지 만드는 설명서
-  .env.example    환경변수 견본 (전부 설명 있음)
+  .env            환경변수 (전부 설명 있음, git·이미지에 포함 — 회사 규칙)
+  .env.example    .env 의 원래 견본
 ```
 
 ## 1. 배포 순서 (처음 한 번)
@@ -23,10 +27,10 @@ sop/
    ```bash
    pip install -r requirements.txt
    export DATABASE_URL='postgresql://계정:비밀번호@DB주소:5432/DB이름?sslmode=require'
-   python -m app.tools.apply_schema --dry-run   # 무엇을 실행할지 미리 보기
-   python -m app.tools.apply_schema             # 실제 적용 (표가 없으면 전체 설계도, 있으면 변경분만)
+   python -m app.core.apply_schema --dry-run   # 무엇을 실행할지 미리 보기
+   python -m app.core.apply_schema             # 실제 적용 (표가 없으면 전체 설계도, 있으면 변경분만)
    ```
-   같은 명령을 여러 번 실행해도 안전합니다. 나중에 `sql/migrations/` 에 파일이 늘어나면 다시 한 번 실행하면 됩니다.
+   같은 명령을 여러 번 실행해도 안전합니다. 나중에 `sql/sop/migrations/` 에 파일이 늘어나면 다시 한 번 실행하면 됩니다.
 3. **컨테이너 빌드·실행**
    ```bash
    docker build -t sop-studio .
@@ -36,7 +40,7 @@ sop/
    컨테이너는 회사 규칙대로 `python app.py` 로 시작합니다(Dockerfile 의 ENTRYPOINT). 파이썬이 있는 PC 라면 같은 명령으로 바로 띄워 볼 수도 있습니다.
 4. 브라우저에서 서비스 주소를 열면 문서 목록(홈)이 뜹니다.
 
-## 2. 환경변수 (전부 `app/config.py` 가 읽음)
+## 2. 환경변수 (전부 `app/core/config.py` 가 읽음)
 
 | 이름 | 필수 | 뜻 |
 |---|---|---|
@@ -52,7 +56,7 @@ sop/
 | `DB_PREPARE_THRESHOLD` | | 기본 5. **PgBouncer 뒤면 0** |
 | `MAX_CONTENT_MB` | | 저장 요청 최대 크기 (기본 20) |
 | `LOG_LEVEL` | | 기본 INFO |
-| `STATIC_DIR` `STATIC_INDEX` | | 편집기 HTML 위치 (기본 `static` / `SOP_STUDIO.html`) |
+| `STATIC_DIR` `STATIC_INDEX` | | 편집기 HTML 위치 (기본 `static` / `sop/sopstudio.html`) |
 
 자세한 설명과 예시는 `.env.example` 에 있습니다.
 

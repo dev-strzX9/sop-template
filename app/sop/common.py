@@ -10,8 +10,8 @@ from uuid import UUID
 
 from psycopg import AsyncConnection
 
-from app.errors import ApiError
-from app.schemas import LockInfo
+from app.core.errors import ApiError
+from app.sop.schemas import LockInfo
 
 
 async def get_document_or_404(conn: AsyncConnection, doc_id: UUID) -> dict:

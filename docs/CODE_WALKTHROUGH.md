@@ -55,7 +55,7 @@ PUT    /api/sops/3f2a-…           { "doc": {…편집기 JSON…}, "saved_by":
 
 ### 이 프로젝트에서 실제로 오가는 편지
 
-브라우저 쪽 코드 `static/SOP_STUDIO.html` 3641~3794행의 `api('동사', '주소', 본문)` 호출을 그대로 옮긴 표입니다.
+브라우저 쪽 코드 `static/sop/sopstudio.html` 3641~3794행의 `api('동사', '주소', 본문)` 호출을 그대로 옮긴 표입니다.
 
 | 화면에서 한 일 | 브라우저가 보내는 편지 | 서버에서 받는 함수 |
 |---|---|---|
@@ -77,7 +77,7 @@ PUT    /api/sops/3f2a-…           { "doc": {…편집기 JSON…}, "saved_by":
 
 ### POST 와 PUT 이 왜 둘 다 "저장" 인가
 
-브라우저 코드 `static/SOP_STUDIO.html:3650~3651` 이 답입니다.
+브라우저 코드 `static/sop/sopstudio.html:3650~3651` 이 답입니다.
 
 ```javascript
 if (rec.id) return api('PUT',  '/api/sops/' + rec.id, {...});   // id 가 있다 = 이미 DB 에 있는 문서 → 교체
@@ -108,15 +108,15 @@ return            api('POST', '/api/sops',            {...});   // id 가 없다
 app/main.py                     ← 식당 문. 손님을 받고 "어느 창구로 가세요" 안내
         │
         ▼
-app/routers/  (창구 3개)        ← 주문 접수. "무엇을 할지" 를 순서대로 지휘
+app/sop/  (창구 3개)            ← 주문 접수. "무엇을 할지" 를 순서대로 지휘
    sops.py      문서 목록·열기·저장·번호변경·삭제        (창구 9개)
    versions.py  버전 이력·옛 버전 열기·비교              (창구 3개)
    locks.py     편집 잠금 잡기·풀기                      (창구 2개)
         │
-        ├──▶ app/derive.py      ← 손질 담당. 주문서(JSON) 에서 필요한 재료만 골라냄. DB 를 모름
-        ├──▶ app/refs.py        ← "다른 SOP 참조" 를 DB 에서 찾아 맞춰 줌
-        ├──▶ app/schemas.py     ← 주문서·응답의 "모양" 정의 (필수 항목이 빠지면 여기서 거절)
-        └──▶ app/db.py          ← 창고(PostgreSQL) 연결 관리
+        ├──▶ app/sop/derive.py      ← 손질 담당. 주문서(JSON) 에서 필요한 재료만 골라냄. DB 를 모름
+        ├──▶ app/sop/refs.py        ← "다른 SOP 참조" 를 DB 에서 찾아 맞춰 줌
+        ├──▶ app/sop/schemas.py     ← 주문서·응답의 "모양" 정의 (필수 항목이 빠지면 여기서 거절)
+        └──▶ app/core/db.py          ← 창고(PostgreSQL) 연결 관리
                     │
                     ▼
               PostgreSQL (표 5개)
@@ -132,18 +132,18 @@ app/routers/  (창구 3개)        ← 주문 접수. "무엇을 할지" 를 순
 
 | 파일 | 줄 수 | 역할 |
 |---|---|---|
-| `app/routers/sops.py` | 527 | 문서 관련 창구 9개 |
-| `app/derive.py` | 385 | JSON 손질 |
-| `app/refs.py` | 205 | SOP 참조 맞추기 |
-| `app/routers/versions.py` | 200 | 버전 이력 창구 3개 |
-| `app/schemas.py` | 198 | 요청·응답 모양 |
+| `app/sop/sops.py` | 527 | 문서 관련 창구 9개 |
+| `app/sop/derive.py` | 385 | JSON 손질 |
+| `app/sop/refs.py` | 205 | SOP 참조 맞추기 |
+| `app/sop/versions.py` | 200 | 버전 이력 창구 3개 |
+| `app/sop/schemas.py` | 198 | 요청·응답 모양 |
 | `app/main.py` | 186 | 식당 문 |
-| `app/config.py` | 149 | 환경변수 읽기 |
-| `app/db.py` | 137 | DB 연결 풀 |
-| `app/routers/locks.py` | 133 | 잠금 창구 2개 |
-| `app/errors.py` | 76 | 오류 형식 |
-| `app/routers/common.py` | 60 | 창구들이 같이 쓰는 도우미 |
-| `app/deps.py` | 32 | 요청마다 "사용자 이름" 과 "DB 연결" 꺼내기 |
+| `app/core/config.py` | 149 | 환경변수 읽기 |
+| `app/core/db.py` | 137 | DB 연결 풀 |
+| `app/sop/locks.py` | 133 | 잠금 창구 2개 |
+| `app/core/errors.py` | 76 | 오류 형식 |
+| `app/sop/common.py` | 60 | 창구들이 같이 쓰는 도우미 |
+| `app/core/deps.py` | 32 | 요청마다 "사용자 이름" 과 "DB 연결" 꺼내기 |
 
 읽는다면 `sops.py` 의 `_append_version` 한 함수(200~310행)만 따라가면 저장의 전부가 보입니다.
 
@@ -326,8 +326,8 @@ new_version_no = max_no + 1
 
 1. `_append_version` 의 `raise ApiError(409, …)` 에서 함수가 중단됩니다. `new_version_no` 이후의 INSERT, UPDATE 는 전혀 실행되지 않습니다.
 2. 오류는 호출자인 `save_document` 의 `async with conn.transaction():` 블록(`sops.py:413`)을 빠져나갑니다. 이때 트랜잭션이 **자동 ROLLBACK** 됩니다. `FOR UPDATE` 로 잡았던 문서 행 잠금도 풀립니다. 이 시점까지 DB 에 쓴 것은 없으니 되돌릴 것도 없습니다.
-3. 오류는 계속 올라가 `app/errors.py:53` 의 오류 처리기(`handle_api_error`)에 잡히고, 브라우저에는 409 응답과 함께 `{ "error": { "code": "version_conflict", "message": "다른 사람이 먼저 v3 을(를) 저장했습니다…", "current_version_no": 3 } }` 가 돌아갑니다.
-4. 브라우저 코드(`static/SOP_STUDIO.html:3613 api()`)는 `res.ok` 가 아니므로 `Error` 를 던지고, 화면은 `err.status === 409` 를 보고 사용자에게 다시 불러오라고 안내합니다.
+3. 오류는 계속 올라가 `app/core/errors.py:53` 의 오류 처리기(`handle_api_error`)에 잡히고, 브라우저에는 409 응답과 함께 `{ "error": { "code": "version_conflict", "message": "다른 사람이 먼저 v3 을(를) 저장했습니다…", "current_version_no": 3 } }` 가 돌아갑니다.
+4. 브라우저 코드(`static/sop/sopstudio.html:3613 api()`)는 `res.ok` 가 아니므로 `Error` 를 던지고, 화면은 `err.status === 409` 를 보고 사용자에게 다시 불러오라고 안내합니다.
 
 ### 트랜잭션이 왜 중요한가
 

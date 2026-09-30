@@ -1,7 +1,7 @@
 # SOP Studio — DB 스키마 해설서
 
 > 대상: 백엔드 담당자. 프론트 코드 지식은 필요 없습니다.
-> 원본 파일: `sql/sop_schema.sql` (새 설치용 전체 스키마), `sql/migrations/*.sql` (기존 DB 변경분)
+> 원본 파일: `sql/sop/schema.sql` (새 설치용 전체 스키마), `sql/sop/migrations/*.sql` (기존 DB 변경분)
 > 이 문서는 "표가 왜 이렇게 생겼는지 / 어떤 코드가 언제 읽고 쓰는지" 를 설명합니다.
 > API·라우터 설명은 `docs/BACKEND_GUIDE.md` 를 보세요.
 
@@ -45,7 +45,7 @@ sop_documents  (SOP 한 건 = 한 행, 영구)
 열면 사라집니다. `content` 통짜 저장은 그 문제가 구조적으로 안 생깁니다.
 
 ```python
-# app/routers/sops.py:82 — 문서 열기는 이게 전부
+# app/sop/sops.py:82 — 문서 열기는 이게 전부
 "SELECT id, version_no, content FROM sop_versions WHERE id = %s"
 ```
 
@@ -90,7 +90,7 @@ sop_documents  (SOP 한 건 = 한 행, 영구)
 
 `ref_document_id` 가 NULL 이면 **"번호만 적혀 있고 아직 그 문서가 없음"**(미작성)
 이라는 뜻이고, 나중에 그 번호로 문서를 만들면 다음 저장 때 자동으로 연결됩니다
-(`app/refs.py` 의 규칙 3 = 승격).
+(`app/sop/refs.py` 의 규칙 3 = 승격).
 
 ---
 
@@ -196,7 +196,7 @@ CREATE TABLE sop_versions (
 읽지 않는 것은 의도적입니다:
 
 ```python
-# app/routers/sops.py:152 — 목록은 content 를 건드리지 않는다
+# app/sop/sops.py:152 — 목록은 content 를 건드리지 않는다
 "SELECT d.id, d.sop_no, d.name, d.area, d.status, d.updated_at, "
 "       v.version_no, COALESCE(v.revision,'') AS revision, COALESCE(v.owner,'') AS owner "
 "  FROM sop_documents d LEFT JOIN sop_versions v ON v.id = d.current_version_id"
@@ -251,7 +251,7 @@ JOIN sop_versions v ON v.id = n.version_id JOIN sop_documents d ON d.id = v.docu
 그래서 diff 코드도 `(instance_id, node_key)` 튜플을 열쇠로 씁니다:
 
 ```python
-# app/routers/versions.py:127
+# app/sop/versions.py:127
 key = (node_row["instance_id"], node_row["node_key"])
 nodes_by_key[key] = node_row
 ```
@@ -268,7 +268,7 @@ nodes_by_key[key] = node_row
 | `position` / `font_size` | 화면 좌표·글자 크기 (**diff 에서 제외**) |
 
 `position` 과 `font_size` 가 diff 비교 대상에서 빠진 이유: 상자를 5px 옮긴 것은
-"내용이 바뀐 개정" 이 아니기 때문입니다. `app/routers/versions.py` 의
+"내용이 바뀐 개정" 이 아니기 때문입니다. `app/sop/versions.py` 의
 `COMPARE_FIELDS` 에서 의도적으로 뺐습니다.
 
 **`ref_document_id` 의 `ON DELETE SET NULL`**: 가리키던 문서가 사라지면 자동으로
@@ -303,7 +303,7 @@ CREATE TABLE flow_edges (
 노드보다 연결선이 먼저 들어오는 순서 문제가 생깁니다.)
 
 > ⚠️ **현재 상태: 쓰기 전용.**
-> 저장할 때마다 `INSERT` 되지만 (`app/routers/sops.py:287`),
+> 저장할 때마다 `INSERT` 되지만 (`app/sop/sops.py:287`),
 > **이 표를 읽는 엔드포인트가 하나도 없습니다.** diff 도 노드만 비교합니다.
 > 순서도 복원은 `content` 로 하므로 기능상 문제는 없지만, 지금은 순수 비용입니다.
 > 연결선 diff 나 "이 노드에서 갈 수 있는 곳" 같은 기능을 만들 계획이 없다면
@@ -330,7 +330,7 @@ CREATE TABLE sop_edit_locks (
 모든 조회에 `expires_at > now()` 가 붙습니다:
 
 ```python
-# app/routers/common.py:38
+# app/sop/common.py:38
 "SELECT locked_by, expires_at FROM sop_edit_locks WHERE document_id = %s AND expires_at > now()"
 ```
 
@@ -346,7 +346,7 @@ CREATE TABLE sop_edit_locks (
 
 ### 3.1 저장 (`POST` 새 문서 / `PUT` 새 버전)
 
-`app/routers/sops.py` 의 `_append_version()` 하나가 둘 다 처리합니다.
+`app/sop/sops.py` 의 `_append_version()` 하나가 둘 다 처리합니다.
 전부 **하나의 트랜잭션** 안에서 일어납니다.
 
 ```
@@ -497,7 +497,7 @@ SELECT d.id, d.sop_no, d.name, d.area, d.status, v.version_no
 ## 5. 편집기 JSON ↔ 컬럼 대응표
 
 `content` 통째 저장이 원칙이지만, 검색·목록용으로 몇 개만 꺼내 둡니다.
-꺼내는 일은 `app/derive.py` 의 `document_meta()` / `derive_flow_rows()` 가 합니다.
+꺼내는 일은 `app/sop/derive.py` 의 `document_meta()` / `derive_flow_rows()` 가 합니다.
 
 | 편집기 JSON 경로 | 컬럼 |
 |---|---|
@@ -522,7 +522,7 @@ SELECT d.id, d.sop_no, d.name, d.area, d.status, v.version_no
 ### 5-1. `DocumentMeta` — "꺼낸 값" 을 담는 바구니
 
 편집기가 보낸 JSON(`doc`)은 수백 KB 짜리 큰 덩어리입니다. 그중 **표 컬럼에 따로 넣을 값 7개** 만
-`app/derive.py` 의 `document_meta(doc)` 가 꺼내서 `DocumentMeta` 라는 작은 상자에 담습니다.
+`app/sop/derive.py` 의 `document_meta(doc)` 가 꺼내서 `DocumentMeta` 라는 작은 상자에 담습니다.
 
 ```python
 @dataclass
@@ -545,7 +545,7 @@ class DocumentMeta:
 
 #### 어디서 만들고, 어디서 쓰나
 
-`app/routers/sops.py` 에서 세 번 만듭니다 — POST(새 문서) · PUT(새 버전) · `_append_version`(둘의 공통 본체).
+`app/sop/sops.py` 에서 세 번 만듭니다 — POST(새 문서) · PUT(새 버전) · `_append_version`(둘의 공통 본체).
 
 ```
 편집기 JSON (doc)
@@ -588,14 +588,14 @@ class DocumentMeta:
 ### 도구
 
 ```bash
-python -m app.tools.apply_schema
+python -m app.core.apply_schema
 ```
 
-`app/tools/apply_schema.py` 가 하는 일:
+`app/core/apply_schema.py` 가 하는 일:
 
 1. `SELECT to_regclass('sop_documents')` 로 **표가 이미 있는지** 확인
-2. 없으면 → `sql/sop_schema.sql` 전체 실행 (새 설치)
-3. 있으면 → `sql/migrations/*.sql` 을 **이름순으로** 실행 (기존 DB)
+2. 없으면 → `sql/sop/schema.sql` 전체 실행 (새 설치)
+3. 있으면 → `sql/sop/migrations/*.sql` 을 **이름순으로** 실행 (기존 DB)
 4. `pg_trgm` 확장을 못 만들면(권한 없음 등) `strip_trgm()` 이 해당 줄과
    `gin_trgm_ops` 인덱스 2줄만 빼고 실행 — **검색은 되고 속도만 조금 다릅니다**
 
@@ -624,7 +624,7 @@ DROP INDEX IF EXISTS ix_안쓰는것;
 COMMENT ON COLUMN 표이름.새칸 IS '설명';
 ```
 
-그리고 **`sql/sop_schema.sql` 에도 같은 변경을 반영하는 것을 잊지 마세요.**
+그리고 **`sql/sop/schema.sql` 에도 같은 변경을 반영하는 것을 잊지 마세요.**
 안 하면 새로 설치한 DB 와 기존 DB 의 모양이 달라집니다.
 
 ---
@@ -647,7 +647,7 @@ COMMENT ON COLUMN 표이름.새칸 IS '설명';
 
 ## 8. 앞으로 (스키마에 주석으로 남아 있는 것)
 
-`sql/sop_schema.sql` 끝에 "나중에 추가할 것" 으로 적혀 있는 항목들입니다.
+`sql/sop/schema.sql` 끝에 "나중에 추가할 것" 으로 적혀 있는 항목들입니다.
 **지금은 구현되어 있지 않습니다.**
 
 - `sop_documents.review_required boolean` — 참조 대상이 개정되면 검토 알림

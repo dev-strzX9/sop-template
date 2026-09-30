@@ -29,7 +29,7 @@ from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
-from app.config import mask_password
+from app.core.config import mask_password
 
 log = logging.getLogger("sop")
 

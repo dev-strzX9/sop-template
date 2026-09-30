@@ -2,13 +2,13 @@
 --  마이그레이션 001 — flow_nodes 에 ref_document_id(참조 문서 id) 칸 추가
 --
 --  "마이그레이션" 이란? 이미 데이터가 들어 있는 DB 의 표 모양을 조금 바꾸는 작업입니다.
---  새 설치라면 sql/sop_schema.sql 에 이미 이 칸이 들어 있으니 이 파일은 필요 없습니다.
+--  새 설치라면 sql/sop/schema.sql 에 이미 이 칸이 들어 있으니 이 파일은 필요 없습니다.
 --
 --  이 파일은 "멱등" 입니다 = 몇 번을 실행해도 결과가 같고 오류가 나지 않습니다.
 --  (IF NOT EXISTS 덕분. 이미 있으면 그냥 넘어갑니다)
 --
---  실행:  python -m app.tools.apply_schema          (도구가 이름순으로 자동 실행)
---    또는 psql "$DATABASE_URL" -f sql/migrations/001_ref_document_id.sql
+--  실행:  python -m app.core.apply_schema          (도구가 이름순으로 자동 실행)
+--    또는 psql "$DATABASE_URL" -f sql/sop/migrations/001_ref_document_id.sql
 -- =====================================================================
 
 -- 1) 칸 추가. sop 노드가 가리키는 SOP 의 문서 id. NULL 이면 "번호만 적혀 있고 아직 연결 안 됨".

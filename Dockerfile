@@ -9,7 +9,8 @@
 #   - 포트는 PORT 환경변수로 (플랫폼이 정해 주는 포트를 그대로 씀. 기본 5000)
 #   - 앞단 프록시(SSO/로드밸런서)가 붙이는 X-Forwarded-* 헤더를 믿도록 --proxy-headers
 #   - HEALTHCHECK 로 /health (DB 를 보지 않는 생존 확인) 를 주기적으로 두드림
-#   - DB 접속 정보는 이미지에 넣지 않고 환경변수(DATABASE_URL 또는 PGHOST 등)로 받음
+#   - 설정은 .env 로 (회사 규칙). .env 를 이미지에 복사하고 앱이 load_dotenv 로 읽음.
+#     Dockerfile ENV / deployment.yaml 의 env 가 있으면 그쪽이 우선 (load_dotenv 는 덮어쓰지 않음)
 # ---------------------------------------------------------------------
 
 # 1. 파이썬 3.12 가 설치된 가벼운(slim) 리눅스에서 시작
@@ -23,7 +24,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. 우리 코드와 편집기 HTML, DB 스키마·마이그레이션 복사
-COPY app.py .
+COPY app.py .env ./
 COPY app/ ./app/
 COPY static/ ./static/
 COPY sql/ ./sql/

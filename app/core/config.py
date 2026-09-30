@@ -30,7 +30,7 @@
   LOG_LEVEL           로그 상세 정도. DEBUG / INFO / WARNING / ERROR. 기본 INFO
   CORS_ORIGINS        HTML을 다른 서버에서 띄울 때 허용할 주소 목록(쉼표 구분). 같은 서버면 비워 둡니다.
   STATIC_DIR          편집기 HTML 파일이 들어 있는 폴더. 기본 static
-  STATIC_INDEX        그 폴더 안에서 "/" 로 접속했을 때 보여 줄 파일 이름. 기본 SOP_STUDIO.html
+  STATIC_INDEX        그 폴더 안에서 "/" 로 접속했을 때 보여 줄 파일 (STATIC_DIR 기준 경로). 기본 sop/sopstudio.html
   MAX_CONTENT_MB      저장 요청 한 건의 최대 크기(MB). 기본 20 (이미지가 base64로 들어가서 큽니다)
 """
 
@@ -138,7 +138,7 @@ class Settings:
 
         # 정적 파일(편집기 HTML) 위치
         self.static_dir: str = os.environ.get("STATIC_DIR", "static")
-        self.static_index: str = os.environ.get("STATIC_INDEX", "SOP_STUDIO.html")
+        self.static_index: str = os.environ.get("STATIC_INDEX", "sop/sopstudio.html")
 
         # 저장 요청 최대 크기. MB 단위 환경변수를 바이트로 바꿔 둡니다.
         self.max_content_bytes: int = _env_int("MAX_CONTENT_MB", 20) * 1024 * 1024

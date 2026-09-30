@@ -1,5 +1,5 @@
 """
-스키마(schemas) — API가 주고받는 JSON의 "모양"을 정의하는 곳.
+스키마(schemas) — SOP API가 주고받는 JSON의 "모양"을 정의하는 곳. (업무 공통 모양은 app/core/schemas.py)
 
 pydantic 모델은 "이 요청에는 이런 필드가 이런 타입으로 와야 한다"는 설명서입니다.
 FastAPI가 요청 JSON을 받으면 이 모델에 맞는지 자동으로 검사하고, 틀리면 422 오류를 냅니다.
@@ -11,7 +11,7 @@ FastAPI가 요청 JSON을 받으면 이 모델에 맞는지 자동으로 검사�
 
 시각(datetime) 은 전부 UTC 로, 끝에 Z 를 붙여 내보냅니다 (예: 2026-09-11T02:30:00.123456Z).
   DB 세션의 timezone 설정이 무엇이든(회사 DB 가 KST 여도) 응답은 항상 같은 모양이 되게 하려는 것입니다.
-  아래 UtcDatetime 타입을 datetime 자리에 쓰면 자동으로 그렇게 됩니다.
+  app/core/schemas.py 의 UtcDatetime 타입을 datetime 자리에 쓰면 자동으로 그렇게 됩니다.
 
 이 파일 읽는 법 (pydantic 표기)
   이름: 타입 = 기본값            → 그 필드는 있어도 되고 없어도 됨 (없으면 기본값)
@@ -22,22 +22,12 @@ FastAPI가 요청 JSON을 받으면 이 모델에 맞는지 자동으로 검사�
   dict[str, Any]                → 아무 모양의 JSON 객체 (내용은 검사하지 않음)
 """
 
-from datetime import datetime, timezone
 from typing import Annotated, Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, PlainSerializer
+from pydantic import BaseModel, Field
 
-
-def to_utc_z(value: datetime) -> str:
-    """datetime 을 "UTC 기준 ISO 8601, 끝에 Z" 문자열로 바꿉니다. 시간대 정보가 없으면 UTC 로 간주합니다."""
-    if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-# datetime 대신 이 타입을 쓰면 JSON 으로 내보낼 때 to_utc_z 가 자동 적용됩니다.
-UtcDatetime = Annotated[datetime, PlainSerializer(to_utc_z, return_type=str, when_used="json")]
+from app.core.schemas import UtcDatetime
 
 
 # ---------------------------------------------------------------------
@@ -191,8 +181,3 @@ class StatusResponse(BaseModel):
     id: UUID
     status: str
     referenced_by: int | None = None   # 폐기(DELETE) 때만: 이 문서를 참조하는 다른 문서 수. 그 외 응답에서는 null
-
-
-class HealthResponse(BaseModel):
-    ok: bool
-    db: str   # "up" 또는 "down"

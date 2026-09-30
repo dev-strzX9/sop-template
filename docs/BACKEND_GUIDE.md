@@ -123,12 +123,12 @@
 └─────────────────────────────────────────────────────┘
       ▼
 ┌─────────────────────────────────────────────────────┐
-│ ⑥ 요청 본문 검증     app/schemas.py  SaveRequest      │
+│ ⑥ 요청 본문 검증     app/sop/schemas.py  SaveRequest      │
 │    JSON을 pydantic 모델로 → 틀리면 자동 422           │
 └─────────────────────────────────────────────────────┘
       ▼
 ┌─────────────────────────────────────────────────────┐
-│ ⑦ 라우터 함수        app/routers/sops.py             │
+│ ⑦ 라우터 함수        app/sop/sops.py             │
 │    save_document()                                  │
 │      ├ derive.validate_document()   문서 형식 검사     │
 │      ├ common.get_document_or_404() 문서 존재 확인     │
@@ -147,7 +147,7 @@
   브라우저   201  { "id": "...", "version_no": 4, "warnings": [] }
 ```
 
-**어디서든 예외가 나면** → ⑦ 을 건너뛰고 `app/errors.py` 가 받아서 통일된 오류 JSON으로 바꿉니다.
+**어디서든 예외가 나면** → ⑦ 을 건너뛰고 `app/core/errors.py` 가 받아서 통일된 오류 JSON으로 바꿉니다.
 
 ## 2.2 파일 지도
 
@@ -155,36 +155,42 @@
 sop/
 ├── app.py                  ① 시작 버튼 (uvicorn 실행)
 ├── app/
-│   ├── main.py             ② 앱 조립 — 라우터 등록, 미들웨어, 헬스체크
-│   ├── config.py           ⚙  환경변수 읽기
-│   ├── db.py               🔌 DB 연결 풀
-│   ├── deps.py             👤 "누가 요청했나"
-│   ├── errors.py           ❗ 오류 형식 통일
-│   ├── schemas.py          📋 요청/응답 모양  ← 프론트와의 계약서
-│   ├── derive.py           🔍 문서 JSON 검증 + 값 추출 (순수 함수)
-│   ├── refs.py             🔗 SOP 간 참조 관계
-│   ├── routers/
-│   │   ├── sops.py         📄 문서 목록/열기/저장/번호변경/폐기
-│   │   ├── versions.py     📚 버전 목록/열기/비교  (읽기 전용)
-│   │   ├── locks.py        🔒 편집 잠금
-│   │   └── common.py       🧰 세 라우터 공용 함수
-│   └── tools/
-│       └── apply_schema.py 🛠 DB 테이블 생성 도구
+│   ├── main.py             ② 앱 조립 — 업무별 라우터 등록, 미들웨어, 헬스체크
+│   ├── core/               ── 모든 업무(SOP, OPL, 주간보고 ...) 공통
+│   │   ├── config.py       ⚙  환경변수 읽기
+│   │   ├── db.py           🔌 DB 연결 풀
+│   │   ├── deps.py         👤 "누가 요청했나"
+│   │   ├── errors.py       ❗ 오류 형식 통일
+│   │   ├── schemas.py      📋 공통 응답 모양 (헬스체크, UTC 시각 표기)
+│   │   └── apply_schema.py 🛠 DB 테이블 생성 도구 (업무별 sql/<업무>/ 를 차례로 적용)
+│   └── sop/                ── SOP 업무 전용
+│       ├── __init__.py     🔀 sops / versions / locks 를 router 하나로 묶음 (main.py 가 이것만 붙임)
+│       ├── schemas.py      📋 요청/응답 모양  ← 프론트와의 계약서
+│       ├── derive.py       🔍 문서 JSON 검증 + 값 추출 (순수 함수)
+│       ├── refs.py         🔗 SOP 간 참조 관계
+│       ├── sops.py         📄 문서 목록/열기/저장/번호변경/폐기
+│       ├── versions.py     📚 버전 목록/열기/비교  (읽기 전용)
+│       ├── locks.py        🔒 편집 잠금
+│       └── common.py       🧰 세 라우터 공용 함수
 ├── sql/
-│   ├── sop_schema.sql      🗄 전체 스키마 (새 설치용)
-│   └── migrations/*.sql    🗄 기존 DB 변경용
+│   └── sop/
+│       ├── schema.sql      🗄 전체 스키마 (새 설치용)
+│       └── migrations/*.sql 🗄 기존 DB 변경용
 └── static/
-    └── SOP_STUDIO.html     🖥 프론트 (편집기) — 건드릴 일 없음
+    └── sop/
+        ├── sopstudio.html  🖥 프론트 (SOP 편집기)
+        └── flowchart.html  🖥 순서도 편집기 (sopstudio.html 이 iframe 으로 띄움)
 ```
 
 ### 의존 방향
 
 ```
-routers/  ──→  schemas, derive, refs, db, errors, deps
+sop/sops·versions·locks  ──→  sop/schemas, sop/derive, sop/refs, core/db, core/errors, core/deps
    │
-refs      ──→  derive, schemas
-derive    ──→  errors                    (DB를 모름 = 순수 함수)
-db        ──→  config
+sop/refs    ──→  sop/derive, sop/schemas
+sop/derive  ──→  core/errors               (DB를 모름 = 순수 함수)
+core/db     ──→  core/config
+core/*      ──→  (업무 폴더를 절대 import 하지 않음)
 ```
 
 **화살표가 한 방향입니다.** `derive.py` 는 DB를 모르고, `db.py` 는 라우터를 모릅니다.
@@ -416,7 +422,7 @@ FastAPI가 **타입과 위치를 보고 자동으로 판단**합니다. 이게 F
 
 ## 4.1 `sops.py` — 문서
 
-> **파일 위치**: `app/routers/sops.py` (527줄)
+> **파일 위치**: `app/sop/sops.py` (527줄)
 > **담당**: 문서의 생성/조회/수정/폐기 전부. 이 프로젝트의 심장.
 
 ### 엔드포인트 요약
@@ -599,7 +605,7 @@ async def load_document_open(conn, doc_row: dict | None) -> DocumentOpen:
 #### 번호 보정 — 미묘하지만 중요한 처리
 
 ```python
-# app/routers/common.py:44
+# app/sop/common.py:44
 def content_with_current_sop_no(content: dict, sop_no: str) -> dict:
     if not isinstance(content, dict):
         return content
@@ -1069,7 +1075,7 @@ async def list_referenced_by(doc_id: UUID, conn = Depends(get_conn)):
 
 ## 4.2 `versions.py` — 버전 (읽기 전용)
 
-> **파일**: `app/routers/versions.py` (200줄)
+> **파일**: `app/sop/versions.py` (200줄)
 > **특징**: 이 파일은 **쓰기를 전혀 하지 않습니다.** 저장은 전부 `sops.py` 담당.
 
 | 메서드 | 경로 | 함수 |
@@ -1210,7 +1216,7 @@ COMPARE_FIELDS = [
 
 ## 4.3 `locks.py` — 편집 잠금
 
-> **파일**: `app/routers/locks.py` (133줄)
+> **파일**: `app/sop/locks.py` (133줄)
 
 | 메서드 | 경로 | 함수 | 용도 |
 |---|---|---|---|
@@ -1428,7 +1434,7 @@ INT4_MIN = -2_147_483_648
 INT4_MAX = 2_147_483_647
 ```
 
-> ⚠️ `VALID_AREAS`, `NODE_TYPES` 는 `sql/sop_schema.sql` 의 CHECK 제약과 **같아야 합니다.**
+> ⚠️ `VALID_AREAS`, `NODE_TYPES` 는 `sql/sop/schema.sql` 의 CHECK 제약과 **같아야 합니다.**
 > 어긋나면 파이썬은 통과시키는데 DB가 거부해서 500이 납니다.
 
 ### 5.1.1 `validate_document` — 최소한만 검사
@@ -2014,7 +2020,7 @@ return JSONResponse(status_code=500,
 ### 어디서든 던지면 된다
 
 ```python
-# routers/common.py 깊은 곳에서
+# sop/common.py 깊은 곳에서
 raise ApiError(404, "not_found", "문서를 찾을 수 없습니다.")
 ```
 
@@ -2176,7 +2182,7 @@ class Settings:
         self.log_level           = os.environ.get("LOG_LEVEL", "INFO")
         self.cors_origins        = [...]
         self.static_dir          = os.environ.get("STATIC_DIR", "static")
-        self.static_index        = os.environ.get("STATIC_INDEX", "SOP_STUDIO.html")
+        self.static_index        = os.environ.get("STATIC_INDEX", "sop/sopstudio.html")
         self.max_content_bytes   = _env_int("MAX_CONTENT_MB", 20) * 1024 * 1024
 ```
 
@@ -2473,8 +2479,8 @@ async def change_status(
 ### 5단계 — import 추가
 
 ```python
-from app.derive import SOP_NO_PATTERN, VALID_STATUSES, derive_flow_rows, document_meta, validate_document
-from app.schemas import (..., StatusChangeRequest, ...)
+from app.sop.derive import SOP_NO_PATTERN, VALID_STATUSES, derive_flow_rows, document_meta, validate_document
+from app.sop.schemas import (..., StatusChangeRequest, ...)
 ```
 
 ### 6단계 — 테스트
@@ -2518,13 +2524,14 @@ curl -X PATCH http://localhost:8000/api/sops/<UUID>/status \
 새로 만들지 말고 **가져다 쓰세요**:
 
 ```python
-from app.routers.common import get_document_or_404, find_active_lock, content_with_current_sop_no
-from app.errors import ApiError
-from app.db import get_conn
-from app.deps import current_user
-from app.schemas import StatusResponse, to_utc_z
-from app.derive import validate_document, document_meta, SOP_NO_PATTERN
-from app.refs import count_referenced_by, find_referenced_by
+from app.sop.common import get_document_or_404, find_active_lock, content_with_current_sop_no
+from app.core.errors import ApiError
+from app.core.db import get_conn
+from app.core.deps import current_user
+from app.core.schemas import to_utc_z
+from app.sop.schemas import StatusResponse
+from app.sop.derive import validate_document, document_meta, SOP_NO_PATTERN
+from app.sop.refs import count_referenced_by, find_referenced_by
 ```
 
 ## 8.4 개발 명령어
@@ -2535,10 +2542,8 @@ python app.py
 PORT=9000 python app.py
 
 # DB 테이블 생성 (최초 1회)
-python -m app.tools.apply_schema
+python -m app.core.apply_schema
 
-# 내 PC에서 DB 없이 (내장 PostgreSQL 포함)
-python -m app.tools.dev_server
 
 # API 문서
 open http://localhost:8000/docs
@@ -2741,14 +2746,14 @@ DELETE /api/sops/{doc_id}/lock                    잠금 풀기
 
 | 하고 싶은 것 | 파일 |
 |---|---|
-| 새 API 추가 | `app/routers/*.py` |
-| 요청/응답 모양 변경 | `app/schemas.py` |
-| 문서 JSON 검증 규칙 변경 | `app/derive.py` |
-| 참조 규칙 변경 | `app/refs.py` |
+| 새 API 추가 | `app/sop/*.py` |
+| 요청/응답 모양 변경 | `app/sop/schemas.py` |
+| 문서 JSON 검증 규칙 변경 | `app/sop/derive.py` |
+| 참조 규칙 변경 | `app/sop/refs.py` |
 | 오류 코드 추가 | 그냥 `raise ApiError(...)` |
-| 인증 붙이기 | `app/deps.py` (한 곳만!) |
-| DB 설정 변경 | `app/db.py`, `app/config.py` |
-| 테이블 추가/변경 | `sql/migrations/00N_*.sql` |
+| 인증 붙이기 | `app/core/deps.py` (한 곳만!) |
+| DB 설정 변경 | `app/core/db.py`, `app/core/config.py` |
+| 테이블 추가/변경 | `sql/sop/migrations/00N_*.sql` |
 | 요청 크기 제한 변경 | 환경변수 `MAX_CONTENT_MB` |
 | 로그 레벨 변경 | 환경변수 `LOG_LEVEL` |
 

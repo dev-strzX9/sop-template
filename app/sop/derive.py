@@ -20,7 +20,7 @@ import re
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from app.errors import ApiError
+from app.core.errors import ApiError
 
 SOP_DOC_FORMAT = "sop-editor-mock"                      # 편집기 문서의 format 값. 다르면 우리 문서가 아님
 VALID_AREAS = ("", "P", "E", "D", "T", "C")             # 적용 AREA 허용값. '' 는 미지정

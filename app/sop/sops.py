@@ -36,19 +36,20 @@ from fastapi import APIRouter, Depends
 from psycopg import AsyncConnection
 from psycopg.types.json import Jsonb
 
-from app.db import get_conn
-from app.deps import current_user
-from app.derive import SOP_NO_PATTERN, derive_flow_rows, document_meta, validate_document
-from app.errors import ApiError
-from app.refs import (
+from app.core.db import get_conn
+from app.core.deps import current_user
+from app.sop.derive import SOP_NO_PATTERN, derive_flow_rows, document_meta, validate_document
+from app.core.errors import ApiError
+from app.sop.refs import (
     count_number_only_references,
     count_referenced_by,
     find_referenced_by,
     load_ref_docs,
     resolve_references,
 )
-from app.routers.common import content_with_current_sop_no, find_active_lock, get_document_or_404
-from app.schemas import (
+from app.sop.common import content_with_current_sop_no, find_active_lock, get_document_or_404
+from app.core.schemas import to_utc_z
+from app.sop.schemas import (
     DocumentOpen,
     DocumentSummary,
     ReferencedBy,
@@ -57,7 +58,6 @@ from app.schemas import (
     SaveRequest,
     SaveResponse,
     StatusResponse,
-    to_utc_z,
 )
 
 router = APIRouter(tags=["sops"])

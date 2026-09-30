@@ -33,13 +33,13 @@ from uuid import UUID
 
 from psycopg import AsyncConnection
 
-from app.derive import iter_sop_nodes, uuid_or_none
+from app.sop.derive import iter_sop_nodes, uuid_or_none
 # 참조 처리 결과 개수(linked / pending / empty)는 응답 모양(schemas.RefsSummary)을 그대로 씁니다.
 # 같은 모양의 상자를 여기서 또 만들면 "어느 것을 써야 하나" 헷갈리기 때문입니다.
 #   linked  = 연결됨: 규칙 1, 규칙 3 성공
 #   pending = 미작성: 번호만 있고 문서가 없는 상자 (규칙 3 실패, 그리고 규칙 2 중 번호 글자가 적혀 있던 것)
 #   empty   = 비어 있음: 번호도 id 도 없는 상자 (규칙 4, 그리고 규칙 2 중 번호 글자도 없던 것)
-from app.schemas import RefsSummary
+from app.sop.schemas import RefsSummary
 
 
 async def _load_documents_by_ids(conn: AsyncConnection, ids: list[UUID]) -> dict:

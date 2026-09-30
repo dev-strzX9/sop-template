@@ -1157,7 +1157,7 @@ button.panel-collapse-tab:focus-visible{outline-color:#ff7a00}
   </div>
 
   <script>
-    window.__FLOW_INSTANCE_ID = new URLSearchParams(location.search).get("id") || "";   // SOP_STUDIO 가 iframe 주소 뒤에 ?id=... 로 넘겨줌
+    window.__FLOW_INSTANCE_ID = new URLSearchParams(location.search).get("id") || "";   // sopstudio 가 iframe 주소 뒤에 ?id=... 로 넘겨줌
     let nodes = [];
     let edges = [];
     let selectedNodeKey = null;
@@ -1171,7 +1171,7 @@ button.panel-collapse-tab:focus-visible{outline-color:#ff7a00}
       description: ""
     };
     let sopInfoCollapsed = false;
-    // 서버(라이브러리)에 저장된 SOP 목록. 부모 창(SOP_STUDIO)이 window.__flowSyncLibrary(list) 로 넘겨준다.
+    // 서버(라이브러리)에 저장된 SOP 목록. 부모 창(sopstudio)이 window.__flowSyncLibrary(list) 로 넘겨준다.
     // SOP 상자가 "어느 문서를 가리키는지" 를 이 목록으로 확인한다. 목록이 아직 안 왔으면 비어 있다.
     let libraryList = [];                 // [{ id, sop_no, name, area, status }]
     let libraryById = new Map();          // 문서 UUID → 문서
@@ -1822,7 +1822,7 @@ button.panel-collapse-tab:focus-visible{outline-color:#ff7a00}
       return { state: "empty", doc: null, sop_no: "", sop_name: storedName };
     }
 
-    // SOP 상자가 가리키는 문서를 부모 창(SOP_STUDIO)에 열어 달라고 부탁한다. 부모가 없으면(단독 실행) 아무것도 안 한다.
+    // SOP 상자가 가리키는 문서를 부모 창(sopstudio)에 열어 달라고 부탁한다. 부모가 없으면(단독 실행) 아무것도 안 한다.
     function openSopRef(nodeKey) {
       const node = nodes.find(item => item.node === nodeKey && item.node_type === "sop");
       if (!node) return;

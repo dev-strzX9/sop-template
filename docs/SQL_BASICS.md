@@ -465,7 +465,7 @@ SELECT id, sop_no, status FROM sop_documents WHERE id = %s FOR UPDATE;
 그 표를 `FOR UPDATE` 로 읽어도 잠글 대상이 없어서 **두 사람 다 그냥 통과**하고,
 둘 다 `INSERT` 로 가서 늦은 쪽이 중복 오류를 냅니다.
 
-그래서 `app/routers/locks.py` 는 이렇게 합니다.
+그래서 `app/sop/locks.py` 는 이렇게 합니다.
 
 ```sql
 -- ① 항상 존재하는 "문서 줄" 을 먼저 잠근다 ← 이게 진짜 줄 세우기
@@ -482,7 +482,7 @@ SELECT locked_by, expires_at, (expires_at > now()) AS is_active
 
 ## 7. 표를 만들 때 쓰는 것들 (CREATE TABLE 읽기)
 
-`sql/sop_schema.sql` 을 읽으려면 이것들을 알아야 합니다.
+`sql/sop/schema.sql` 을 읽으려면 이것들을 알아야 합니다.
 
 ### 7-1. 자료형
 
@@ -639,7 +639,7 @@ SELECT id, version_no, content FROM sop_versions WHERE id = %s;
 이 저장소에서 `content` 가 나오는 SQL 은 3개뿐이고, **`WHERE` 뒤에는 한 번도 안 나옵니다.**
 
 ```bash
-grep -rn "content" app/routers/*.py | grep -i "select\|where\|insert"
+grep -rn "content" app/sop/*.py | grep -i "select\|where\|insert"
 # sops.py:82      SELECT id, version_no, content FROM sop_versions WHERE id = %s
 # sops.py:250     INSERT INTO sop_versions (…, content, …)
 # versions.py:59  SELECT id, version_no, content FROM sop_versions WHERE document_id = %s AND version_no = %s
@@ -693,7 +693,7 @@ CREATE INDEX ix_flow_nodes_ref_doc ON flow_nodes (ref_document_id)
 
 ## 9. 실전 — 이 저장소의 SQL 3개를 한 줄씩 해부
 
-### 9-1. 문서 목록 (`app/routers/sops.py:152`)
+### 9-1. 문서 목록 (`app/sop/sops.py:152`)
 
 ```sql
 SELECT d.id, d.sop_no, d.name, d.area, d.status, d.updated_at,
@@ -734,7 +734,7 @@ PostgreSQL 은 `MAX()` 같은 집계함수와 `FOR UPDATE` 를 한 문장에 같
 
 `COALESCE(…, 0)` 이 없으면 첫 저장 때 `NULL + 1 = NULL` 이 됩니다.
 
-### 9-3. 이 문서를 참조하는 다른 문서 (`app/refs.py:153`)
+### 9-3. 이 문서를 참조하는 다른 문서 (`app/sop/refs.py:153`)
 
 ```sql
 SELECT d.id, d.sop_no, d.name, d.area, d.status, v.version_no
@@ -807,4 +807,4 @@ SELECT count(*) FROM flow_nodes n
 
 - `docs/DB_SCHEMA.md` — 이 스키마가 **왜** 이렇게 생겼는지 (표별 상세, 동작별 흐름)
 - `docs/BACKEND_GUIDE.md` — API·라우터·FastAPI 쪽 설명
-- `sql/sop_schema.sql` — 원본. 이제 한 줄씩 읽힐 것입니다
+- `sql/sop/schema.sql` — 원본. 이제 한 줄씩 읽힐 것입니다

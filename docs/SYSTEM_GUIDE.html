@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOP Studio 동작 안내</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --ink:#1B2430; --muted:#5E6B7A; --line:#D6DCE3;
+  --accent:#1F6F8B; --accent-ink:#FFFFFF; --accent-soft:#E1EEF3;
+  --warn:#B8650F; --warn-soft:#FBEEDC; --ok:#2E7D4F; --ok-soft:#E2F1E7;
+  --code-bg:#E9EDF1; --code-ink:#1B2430;
+  --doc:#7A4DB3; --doc-soft:#EFE7F8; --ver:#1F6F8B; --ver-soft:#E1EEF3;
+  --node:#8A6D1F; --node-soft:#F6EFD9; --lock:#A03A5C; --lock-soft:#F8E4EB;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161D; --surface:#171F28; --ink:#E6EBF0; --muted:#98A5B3; --line:#2A3542;
+    --accent:#5FB3CF; --accent-ink:#0B1A21; --accent-soft:#16303A;
+    --warn:#E9A24F; --warn-soft:#3A2A14; --ok:#6CC58F; --ok-soft:#173224;
+    --code-bg:#0C1218; --code-ink:#DCE4EC;
+    --doc:#B592E6; --doc-soft:#2A2038; --ver:#5FB3CF; --ver-soft:#16303A;
+    --node:#D9B45A; --node-soft:#33290F; --lock:#E288A6; --lock-soft:#3A1E29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161D; --surface:#171F28; --ink:#E6EBF0; --muted:#98A5B3; --line:#2A3542;
+  --accent:#5FB3CF; --accent-ink:#0B1A21; --accent-soft:#16303A;
+  --warn:#E9A24F; --warn-soft:#3A2A14; --ok:#6CC58F; --ok-soft:#173224;
+  --code-bg:#0C1218; --code-ink:#DCE4EC;
+  --doc:#B592E6; --doc-soft:#2A2038; --ver:#5FB3CF; --ver-soft:#16303A;
+  --node:#D9B45A; --node-soft:#33290F; --lock:#E288A6; --lock-soft:#3A1E29;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.7;margin:0;padding-block:0 64px;padding-inline:16px}
+code,pre,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+code{background:var(--code-bg);color:var(--code-ink);padding:.1em .4em;border-radius:4px;font-size:.88em}
+pre{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:8px;overflow-x:auto;font-size:.85em;line-height:1.55;margin:12px 0}
+pre code{background:none;padding:0;font-size:1em}
+a{color:var(--accent)}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:23px;font-weight:700;margin-top:64px;padding-top:28px;border-top:2px solid var(--line)}
+h2 .part{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:6px}
+h3{font-size:17px;font-weight:700;margin-top:36px;padding-top:14px;border-top:1px solid var(--line)}
+h4{font-size:14.5px;font-weight:700;margin-top:20px}
+p{margin:12px 0;max-width:70ch}
+ul,ol{max-width:70ch;padding-left:1.4em}
+li{margin:4px 0}
+.wrap{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:40px}
+@media (max-width:820px){.wrap{grid-template-columns:1fr;gap:0}}
+nav{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-top:40px;font-size:13px;max-height:calc(100vh - env(safe-area-inset-top,0px));overflow-y:auto}
+nav ol{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:1px}
+nav .grp{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 10px 4px;font-weight:500}
+nav .grp:first-child{margin-top:0}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:4px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0}
+nav a:hover,nav a:focus-visible{color:var(--ink);background:var(--accent-soft);outline:none}
+nav a.on{color:var(--accent);border-left-color:var(--accent);font-weight:500}
+@media (max-width:820px){nav{position:static;padding-top:24px;max-height:none}nav ol{flex-direction:row;flex-wrap:wrap;gap:4px}nav .grp{width:100%;margin:8px 0 2px}nav a{border-left:0;border:1px solid var(--line);border-radius:999px;padding:3px 10px}nav a.on{border-color:var(--accent)}}
+main{padding-top:40px;min-width:0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.lede{font-size:17px;color:var(--muted);max-width:62ch}
+.tbl{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12.5px;letter-spacing:.03em;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+td.k{white-space:nowrap}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:16px 0;max-width:70ch}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note p{margin:4px 0}
+.pill{display:inline-block;font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);vertical-align:middle;letter-spacing:.02em;white-space:nowrap}
+.pill.doc{color:var(--doc);border-color:var(--doc);background:var(--doc-soft)}
+.pill.ver{color:var(--ver);border-color:var(--ver);background:var(--ver-soft)}
+.pill.node{color:var(--node);border-color:var(--node);background:var(--node-soft)}
+.pill.lock{color:var(--lock);border-color:var(--lock);background:var(--lock-soft)}
+.pill.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.pill.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.verb{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:12.5px;padding:1px 7px;border-radius:4px;background:var(--code-bg)}
+.file{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:18px 0}
+.file .fh{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:6px}
+.file .fh code{font-size:15px;font-weight:500;background:none;padding:0;color:var(--accent)}
+.file .fh .lines{font-size:12px;color:var(--muted)}
+.file .role{color:var(--muted);margin:0 0 8px;font-size:14.5px}
+.fn{border-top:1px dashed var(--line);padding:10px 0 4px;margin-top:8px}
+.fn .sig{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:500;margin:0 0 4px}
+.fn .sig .ep{color:var(--accent)}
+.fn p{margin:4px 0;font-size:14px}
+.fn .who{font-size:12.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h4{margin:0 0 6px;font-size:14.5px}
+.card p{margin:4px 0;font-size:14px}
+.big{font-size:15.5px;font-weight:500}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+</style>
+<style>
+.why{border:1px solid var(--line);border-left:4px solid var(--ok);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 16px;margin:18px 0;max-width:78ch}
+.why p{margin:8px 0;font-size:14.5px}
+.whytag{display:inline-block;font-size:12px;font-weight:700;color:var(--ok);background:var(--ok-soft);border-radius:999px;padding:1px 10px;letter-spacing:.04em}
+.where{font-size:12.5px;color:var(--muted)}
+.fig{margin:20px 0 24px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 14px 10px}
+.fig figcaption{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.6;max-width:90ch}
+.dg{display:block;width:100%;height:auto;color:var(--ink);font-family:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo",sans-serif}
+.dg text{fill:currentColor;font-size:13px}
+.dg .t{font-weight:700;font-size:13.5px}
+.dg .s{fill:var(--muted);font-size:12px}
+.dg .zt{fill:var(--muted);font-size:12px;font-weight:700;letter-spacing:.02em}
+.dg .mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:12px}
+.dg .c{fill:var(--ink)}
+.dg .pk{fill:var(--accent);font-weight:500}
+.dg .fk{fill:var(--doc);font-weight:500}
+.dg .rel{font-size:11.5px}
+.dg .lb{paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.dg .s.warn{fill:var(--warn)} .dg .s.ok{fill:var(--ok)}
+.dg .bx{fill:var(--bg);stroke:var(--line);stroke-width:1.5}
+.dg .bx.acc{fill:var(--accent-soft);stroke:var(--accent)}
+.dg .bx.warn{fill:var(--warn-soft);stroke:var(--warn)}
+.dg .bx.ok{fill:var(--ok-soft);stroke:var(--ok)}
+.dg .bx.lock{fill:var(--lock-soft);stroke:var(--lock)}
+.dg .bx.dash{stroke-dasharray:6 4}
+.dg .th{fill:var(--line);stroke:none}
+.dg .th.acc{fill:var(--accent);opacity:.25}
+.dg .th.lock{fill:var(--lock);opacity:.25}
+.dg .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 5}
+.dg .zone.acc{stroke:var(--accent)}
+.dg .ln{stroke:currentColor;stroke-width:1.5;fill:none}
+.dg .ln.acc{stroke:var(--accent)} .dg .ln.warn{stroke:var(--warn)} .dg .ln.ok{stroke:var(--ok)}
+.dg .ln.dash{stroke-dasharray:6 4}
+.dg .ln.faint{stroke:var(--line)}
+.dg .mk{fill:currentColor} .dg .mk.acc{fill:var(--accent)} .dg .mk.warn{fill:var(--warn)} .dg .mk.ok{fill:var(--ok)}
+.dg .dot{fill:currentColor} .dg .dot.warn{fill:var(--warn)}
+main{max-width:none}
+p,ul,ol{max-width:78ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav aria-label="목차"><ol>
+<li class="grp">1부 · 큰 그림</li>
+<li><a href="#c0">이 문서 읽는 법</a></li>
+<li><a href="#c1">무엇을 만드는 시스템인가</a></li>
+<li><a href="#c2">세 덩어리와 연결</a></li>
+<li><a href="#c3">폴더 지도</a></li>
+<li class="grp">2부 · 서버가 켜지기까지</li>
+<li><a href="#c4">설정: .env 와 환경변수</a></li>
+<li><a href="#c5">시작 순서</a></li>
+<li><a href="#c6">DB 표 준비</a></li>
+<li><a href="#c7">연결 풀과 lifespan</a></li>
+<li class="grp">3부 · 요청 하나의 여정</li>
+<li><a href="#c8">전체 순서 한눈에</a></li>
+<li><a href="#c9">브라우저: api()</a></li>
+<li><a href="#c10">미들웨어</a></li>
+<li><a href="#c11">라우팅</a></li>
+<li><a href="#c12">Depends</a></li>
+<li><a href="#c13">get_conn 과 yield</a></li>
+<li><a href="#c14">바디 검사 (pydantic)</a></li>
+<li><a href="#c15">API 함수와 async</a></li>
+<li><a href="#c16">오류와 응답</a></li>
+<li class="grp">4부 · 데이터</li>
+<li><a href="#c17">DB 표 5개</a></li>
+<li><a href="#c18">JSON 통째 + 사본</a></li>
+<li><a href="#c19">저장의 속</a></li>
+<li><a href="#c20">동시 저장 충돌</a></li>
+<li><a href="#c21">id 와 번호, 참조</a></li>
+<li><a href="#c22">폐기와 버전 열람</a></li>
+<li><a href="#c23">편집 잠금</a></li>
+<li class="grp">5부 · 화면</li>
+<li><a href="#c24">프론트 구조</a></li>
+<li><a href="#c25">저장 버튼을 누르면</a></li>
+<li class="grp">6부 · 앞으로</li>
+<li><a href="#c26">사용자 식별 · SSO</a></li>
+<li><a href="#c27">권한 체계</a></li>
+<li><a href="#c28">접근 기록</a></li>
+<li><a href="#c29">새 업무 추가</a></li>
+<li class="grp">7부 · 운영</li>
+<li><a href="#c30">Docker · 배포</a></li>
+<li><a href="#c31">로그 · stdout</a></li>
+<li><a href="#c32">알려진 문제</a></li>
+<li class="grp">부록</li>
+<li><a href="#a1">문법 사전</a></li>
+<li><a href="#a2">API 목록</a></li>
+<li><a href="#a3">오류 코드</a></li>
+<li><a href="#a4">용어집</a></li>
+</ol></nav>
+<main>
+<div class="eyebrow">sop-template · 전체 흐름 안내서</div>
+<h1>SOP Studio 는 어떻게 돌아가나</h1>
+<p class="lede">서버가 켜지는 순간부터, 브라우저에서 "저장" 을 누른 요청 하나가 DB 에 들어갔다가 응답으로 돌아올 때까지를 순서대로 따라갑니다. 각 장면마다 <b>무엇을 하는지</b>와 <b>왜 이렇게 만들었는지</b>를 같이 적었습니다.</p>
+
+<!-- ============================================================ 1부 -->
+<h2 id="c0"><span class="part">1부 · 큰 그림</span>0. 이 문서 읽는 법</h2>
+<p>위에서 아래로 쭉 읽으면 하나의 이야기가 되도록 썼습니다. 1부에서 전체 모양을 잡고, 2부에서 서버가 켜지고, 3부에서 요청 하나가 들어와 응답이 나가고, 4부에서 그 요청이 DB 안에서 무슨 일을 하는지, 5부에서 화면 쪽은 어떻게 생겼는지, 6·7부에서 앞으로 붙일 것과 운영을 다룹니다.</p>
+<p>표시 세 가지만 기억하세요.</p>
+<ul>
+<li><span class="where">📍 <code>파일:줄</code></span> — 실제 코드 위치. 에디터에서 같이 열어 보세요.</li>
+<li><span class="whytag">왜?</span> 상자 — 그렇게 만든 이유. 다르게 했다면 무엇이 문제였을지.</li>
+<li>모르는 문법이 나오면 <a href="#a1">부록: 문법 사전</a>.</li>
+</ul>
+
+<h2 id="c1"><span class="part">1부 · 큰 그림</span>1. 무엇을 만드는 시스템인가</h2>
+<p>SOP(표준 작업 절차서)를 <b>웹 브라우저에서 작성</b>하고, <b>서버 DB 에 버전별로 보관</b>하고, 여러 사람이 <b>같이 쓰는</b> 도구입니다. 요구 사항을 풀어 쓰면 이렇습니다.</p>
+<div class="tbl"><table>
+<tr><th>요구</th><th>그래서 생긴 장치</th><th>어디서 다룸</th></tr>
+<tr><td>표지·적용범위·순서도·본문 같은 정해진 양식으로 쓴다</td><td>템플릿 블록, 순서도 편집기, PPT 내보내기</td><td>5부</td></tr>
+<tr><td>저장할 때마다 이력이 남아야 한다</td><td>"수정" 없이 항상 "새 버전 추가"</td><td><a href="#c19">19장</a></td></tr>
+<tr><td>둘이 동시에 고치다 한쪽 작업이 사라지면 안 된다</td><td>버전 번호 비교(409) + 편집 잠금(423)</td><td><a href="#c20">20</a>·<a href="#c23">23장</a></td></tr>
+<tr><td>SOP 끼리 서로 참조한다 (순서도 안의 "다른 SOP" 상자)</td><td>UUID 로 연결, 저장 때마다 이름·번호 갱신</td><td><a href="#c21">21장</a></td></tr>
+<tr><td>"MES 를 쓰는 SOP" 같은 검색</td><td>순서도를 표 행으로 풀어 둔 사본</td><td><a href="#c18">18장</a></td></tr>
+<tr><td>회사 컨테이너 플랫폼에 올린다</td><td>.env, 포트 5000, <code>python app.py</code>, 준비 확인 주소</td><td>7부</td></tr>
+</table></div>
+
+<h2 id="c2"><span class="part">1부 · 큰 그림</span>2. 세 덩어리와 그 사이의 연결</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 380" role="img" aria-label="브라우저, SSO 프록시, 파이썬 서버 내부 4단계, PostgreSQL 로 이어지는 전체 구조"><defs><marker id="m1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m1acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m1warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m1ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="10" y="30" width="250" height="330" rx="12" class="zone "/><text x="22" y="50" text-anchor="start" class="zt">① 사용자 PC 의 브라우저</text><rect x="30" y="70" width="210" height="76" rx="8" class="bx "/><text x="135.0" y="96" text-anchor="middle" class="t">sopstudio.html</text><text x="135.0" y="114" text-anchor="middle" class="s">편집기 본체 · 템플릿</text><text x="135.0" y="130" text-anchor="middle" class="s">라이브러리 트리 · PPT</text><rect x="30" y="250" width="210" height="76" rx="8" class="bx "/><text x="135.0" y="276" text-anchor="middle" class="t">flowchart.html</text><text x="135.0" y="294" text-anchor="middle" class="s">순서도 편집기</text><text x="135.0" y="310" text-anchor="middle" class="s">(iframe 으로 들어감)</text><polyline points="135,146 135,250" class="ln " marker-end="url(#m1d)"/><text x="140" y="192" text-anchor="start" class="s lb">함수 직접 호출</text><polyline points="135,250 135,146" class="ln " marker-end="url(#m1d)"/><rect x="290" y="160" width="130" height="76" rx="8" class="bx dash"/><text x="355.0" y="186" text-anchor="middle" class="t">SSO 프록시</text><text x="355.0" y="204" text-anchor="middle" class="s">회사에서만</text><text x="355.0" y="220" text-anchor="middle" class="s">사번 헤더 추가</text><rect x="455" y="30" width="318" height="330" rx="12" class="zone acc"/><text x="467" y="50" text-anchor="start" class="zt">② 파이썬 서버 (uvicorn + FastAPI)</text><rect x="470" y="66" width="280" height="52" rx="8" class="bx "/><text x="610.0" y="88" text-anchor="middle" class="t">미들웨어 log_and_limit</text><text x="610.0" y="106" text-anchor="middle" class="s">크기 제한 · 로그 (모든 요청)</text><rect x="470" y="140" width="280" height="52" rx="8" class="bx "/><text x="610.0" y="162" text-anchor="middle" class="t">라우팅 + Depends</text><text x="610.0" y="180" text-anchor="middle" class="s">주소→함수 · 사용자 · 연결 · 바디 검사</text><rect x="470" y="214" width="280" height="52" rx="8" class="bx acc"/><text x="610.0" y="236" text-anchor="middle" class="t">API 함수 (app/sop/*.py)</text><text x="610.0" y="254" text-anchor="middle" class="s">저장 규칙 · 잠금 · 참조</text><rect x="470" y="288" width="280" height="52" rx="8" class="bx "/><text x="610.0" y="310" text-anchor="middle" class="t">연결 풀 (app/core/db.py)</text><text x="610.0" y="328" text-anchor="middle" class="s">미리 열어 둔 DB 연결 2~10개</text><polyline points="610,118 610,140" class="ln " marker-end="url(#m1d)"/><polyline points="610,192 610,214" class="ln " marker-end="url(#m1d)"/><polyline points="610,266 610,288" class="ln " marker-end="url(#m1d)"/><rect x="810" y="160" width="175" height="76" rx="8" class="bx "/><text x="897.5" y="186" text-anchor="middle" class="t">③ PostgreSQL</text><text x="897.5" y="204" text-anchor="middle" class="s">표 5개</text><text x="897.5" y="220" text-anchor="middle" class="s">문서·버전·순서도·잠금</text><polyline points="240,108 265,108 265,198 290,198" class="ln " marker-end="url(#m1d)"/><text x="262" y="96" text-anchor="middle" class="s lb">fetch (헤더+JSON)</text><polyline points="420,198 432,198 432,86 470,86" class="ln " marker-end="url(#m1d)"/><text x="428" y="214" text-anchor="end" class="s lb">요청</text><polyline points="750,314 785,314 785,198 810,198" class="ln " marker-end="url(#m1d)"/><text x="790" y="186" text-anchor="start" class="s lb">SQL</text><polyline points="470,106 444,106 444,352 60,352 60,326" class="ln dash" marker-end="url(#m1d)"/><text x="250" y="345" text-anchor="middle" class="s lb">JSON 응답 (같은 길을 거꾸로)</text></svg><figcaption>브라우저가 보낸 요청은 미들웨어 → 라우팅·Depends → API 함수 → 연결 풀 → DB 순으로 안쪽까지 들어갔다가, 같은 길로 응답이 되돌아옵니다. HTML 파일 자체도 이 서버가 <code>/</code> 와 <code>/static/</code> 으로 내려줍니다.</figcaption></figure>
+<p>덩어리는 셋입니다. <b>① 브라우저</b>에서 도는 HTML/JavaScript, <b>② 파이썬 서버</b>, <b>③ PostgreSQL</b>. 브라우저는 DB 를 직접 만지지 않고 반드시 서버를 거칩니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 브라우저가 DB 에 직접 붙지 않나</b> — 브라우저 코드는 사용자가 개발자 도구로 얼마든지 고칠 수 있습니다. 검사(형식, 충돌, 권한)를 브라우저에만 두면 우회됩니다. 서버가 "문지기" 이고, DB 비밀번호도 서버만 압니다.</p>
+<p><b>왜 HTML 도 같은 서버가 내려주나</b> — 화면과 API 가 같은 주소(origin)에서 나오면 CORS 설정이 필요 없고, 배포 단위가 컨테이너 하나로 끝납니다. 📍 <code>app/main.py:169</code> <code>index()</code> 가 <code>static/sop/sopstudio.html</code> 을 읽어 보냅니다.</p>
+</div>
+
+<h2 id="c3"><span class="part">1부 · 큰 그림</span>3. 폴더 지도</h2>
+<pre>
+sop-template/
+├─ app.py                  ★ 시작 버튼. python app.py → DB 표 준비 → 웹서버 켜기
+├─ .env / .env.example     설정값 / 그 견본과 설명
+├─ requirements.txt        파이썬 라이브러리 목록 (fastapi, uvicorn, psycopg, pydantic, python-dotenv …)
+├─ Dockerfile              회사 배포용 이미지 설명서
+├─ docker-compose.yml      내 PC 에서 DB 띄우는 설명서 (로컬 전용)
+├─ app/
+│  ├─ __init__.py          .env → 환경변수 (가장 먼저 실행)
+│  ├─ main.py              ★ FastAPI 앱 조립: 미들웨어 · 라우터 · 헬스체크 · "/" HTML
+│  ├─ core/                ── 모든 업무 공통 ──
+│  │  ├─ config.py         환경변수 → Settings
+│  │  ├─ db.py             연결 풀 · get_conn
+│  │  ├─ deps.py           current_user
+│  │  ├─ errors.py         ApiError · 오류 JSON 통일
+│  │  ├─ schemas.py        HealthResponse · UTC 시각 표기
+│  │  └─ apply_schema.py   DB 표 설치/마이그레이션
+│  └─ sop/                 ── SOP 업무 ──
+│     ├─ __init__.py       라우터 3개 묶기
+│     ├─ sops.py           목록/열기/만들기/저장/번호변경/폐기/참조
+│     ├─ versions.py       버전 목록/열기/비교 (읽기 전용)
+│     ├─ locks.py          편집 잠금
+│     ├─ schemas.py        요청·응답 모양
+│     ├─ derive.py         JSON 검사 · 순서도 → 행 (DB 안 씀, 순수 함수)
+│     ├─ refs.py           SOP 상자 참조 정리
+│     └─ common.py         404 확인 등 공용 도우미
+├─ sql/sop/                schema.sql + migrations/
+├─ static/sop/             sopstudio.html + flowchart.html
+└─ docs/
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 core 와 sop 를 나눴나</b> — OPL, 주간보고가 추가될 예정이기 때문입니다. 공통(설정, DB, 사용자, 오류)은 한 번만 만들고 업무는 옆에 폴더로 붙입니다. 규칙은 하나: <code>core/</code> 안에 "SOP" 라는 단어가 나오면 안 됩니다. 그 규칙만 지키면 업무끼리 서로를 몰라도 됩니다.</p>
+<p><b>왜 derive.py 는 DB 를 안 쓰나</b> — "JSON 을 받아 행을 돌려준다" 만 하는 순수 함수라 DB 없이도 테스트할 수 있습니다. 편집기 JSON 의 키 이름이 바뀌면 이 파일만 고치면 됩니다.</p>
+<p><b>왜 sops / versions / locks 로 나눴나</b> — 쓰기(sops), 읽기 전용 이력(versions), 잠금(locks)은 바뀌는 이유가 서로 다릅니다. 같이 쓰는 작은 함수는 <code>common.py</code> 에 모아 중복을 없앴습니다.</p>
+</div>
+
+<!-- ============================================================ 2부 -->
+<h2 id="c4"><span class="part">2부 · 서버가 켜지기까지</span>4. 설정: .env 와 환경변수</h2>
+<p>서버가 켜지려면 먼저 "어느 DB 에 붙을지, 몇 번 포트를 열지" 를 알아야 합니다. 이런 값은 코드에 적지 않고 <b>환경변수</b>(운영체제가 프로그램에 건네는 이름=값 쌍)로 받습니다.</p>
+<pre>
+# app/__init__.py  📍 app/__init__.py:9
+load_dotenv(os.path.join(프로젝트폴더, ".env"))      ← .env 파일 내용을 환경변수로 "올림"
+
+# app/core/config.py
+self.user_header = os.environ.get("USER_HEADER", "X-User")   ← 이름으로 꺼내 씀, 없으면 기본값
+</pre>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 210" role="img" aria-label="환경변수 값의 우선순위 네 단계"><defs><marker id="m2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m2acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m2warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m2ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="60" width="225" height="72" rx="8" class="bx acc"/><text x="132.5" y="92" text-anchor="middle" class="t">1  명령줄</text><text x="132.5" y="110" text-anchor="middle" class="s mono">PORT=9000 python app.py</text><rect x="265" y="60" width="225" height="72" rx="8" class="bx "/><text x="377.5" y="92" text-anchor="middle" class="t">2  Dockerfile ENV / 배포 env</text><text x="377.5" y="110" text-anchor="middle" class="s mono">ENV PORT=5000</text><polyline points="265,96 245,96" class="ln " marker-end="url(#m2d)"/><rect x="510" y="60" width="225" height="72" rx="8" class="bx "/><text x="622.5" y="92" text-anchor="middle" class="t">3  .env 파일</text><text x="622.5" y="110" text-anchor="middle" class="s mono">PORT=8000 (load_dotenv)</text><polyline points="510,96 490,96" class="ln " marker-end="url(#m2d)"/><rect x="755" y="60" width="225" height="72" rx="8" class="bx "/><text x="867.5" y="92" text-anchor="middle" class="t">4  코드 기본값</text><text x="867.5" y="110" text-anchor="middle" class="s mono">os.environ.get("PORT", "8000")</text><polyline points="755,96 735,96" class="ln " marker-end="url(#m2d)"/><text x="500" y="36" text-anchor="middle" class="s">왼쪽일수록 강함 — 먼저 정해진 값이 있으면 오른쪽은 덮어쓰지 못함</text><text x="500" y="170" text-anchor="middle" class="s">load_dotenv(override=False): .env 는 "아직 비어 있는 이름" 만 채운다</text></svg><figcaption>컨테이너 안에서는 Dockerfile 의 <code>ENV PORT=5000</code> 이 먼저 들어가 있으므로 .env 의 8000 이 무시되는 것처럼 보입니다. 무시되는 게 아니라, 이미 값이 있어서 덮어쓰지 않는 것입니다.</figcaption></figure>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 환경변수인가</b> — 같은 코드를 내 PC(로컬 DB, 8000번)와 회사(10.61.41.6, 5000번)에서 고치지 않고 돌리기 위해서입니다. 코드는 "이름" 만 알고, 값은 실행하는 곳이 넣어 줍니다.</p>
+<p><b>왜 .env 파일인가</b> — 회사 규칙입니다(설정은 .env + load_dotenv). 환경변수를 매번 손으로 치는 대신 파일에 적어 두는 메모장입니다.</p>
+<p><b>왜 load_dotenv 가 덮어쓰지 않게(override=False) 했나</b> — 배포 설정(Dockerfile ENV, deployment.yaml)이 .env 보다 우선해야 운영자가 이미지를 다시 빌드하지 않고 값을 바꿀 수 있기 때문입니다.</p>
+<p><b>왜 app/__init__.py 에 두었나</b> — <code>app</code> 패키지의 무엇을 import 하든 이 파일이 가장 먼저 실행됩니다. 그래서 "설정을 읽기 전에 .env 를 올리는 것을 깜빡" 하는 일이 생길 수 없습니다. <code>app.py</code> 맨 위의 <code>import app</code> 도 PORT 를 읽기 전에 .env 를 올리려는 줄입니다.</p>
+<p><b>왜 get_settings() 가 부를 때마다 새로 읽나</b> — 테스트에서 환경변수를 바꿔 끼운 효과가 바로 보이게 하려는 것입니다. 값이 몇 개 안 되어 비용은 무시할 만합니다.</p>
+<p><b>왜 DATABASE_URL 과 PGHOST 두 방식인가</b> — 로컬은 주소 한 줄이 편하고, 회사는 호스트·계정·비밀번호를 따로 주는 경우가 많습니다. 조립에는 <code>make_conninfo</code> 를 써서 비밀번호에 <code>@</code>, <code>/</code> 같은 특수문자가 있어도 안전합니다. <b>DATABASE_URL 이 있으면 그것이 최우선</b>이므로 회사에서 PGHOST 방식을 쓰려면 DATABASE_URL 줄을 지워야 합니다.</p>
+</div>
+<div class="tbl"><table>
+<tr><th>환경변수</th><th>기본값</th><th>뜻</th></tr>
+<tr><td><code>DATABASE_URL</code></td><td>localhost 의 sop</td><td>DB 주소. 없으면 PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE 로 조립</td></tr>
+<tr><td><code>PORT</code></td><td>8000 (이미지는 5000)</td><td>서버 포트</td></tr>
+<tr><td><code>USER_HEADER</code></td><td>X-User</td><td>사용자 이름을 읽을 헤더. SSO 헤더 이름으로 바꾸는 곳</td></tr>
+<tr><td><code>ROOT_PATH</code></td><td>(빈 값)</td><td>서버가 <code>/sop</code> 같은 접두어 뒤에 있을 때</td></tr>
+<tr><td><code>STATIC_DIR</code> / <code>STATIC_INDEX</code></td><td>static / sop/sopstudio.html</td><td>"/" 에서 보여 줄 HTML</td></tr>
+<tr><td><code>DB_POOL_MIN</code> / <code>MAX</code></td><td>2 / 10</td><td>미리 열 연결 수 / 최대</td></tr>
+<tr><td><code>DB_CONNECT_TIMEOUT</code></td><td>30</td><td>접속 대기 초</td></tr>
+<tr><td><code>DB_SESSION_OPTIONS</code></td><td>-c timezone=UTC</td><td>연결마다 붙이는 세션 옵션</td></tr>
+<tr><td><code>DB_PREPARE_THRESHOLD</code></td><td>5</td><td>PgBouncer 뒤라면 0</td></tr>
+<tr><td><code>MAX_CONTENT_MB</code></td><td>20</td><td>요청 하나 최대 크기</td></tr>
+<tr><td><code>LOG_LEVEL</code></td><td>INFO</td><td>로그 상세 정도</td></tr>
+<tr><td><code>CORS_ORIGINS</code></td><td>(빈 값)</td><td>HTML 을 다른 주소에서 띄울 때만</td></tr>
+</table></div>
+
+<h2 id="c5"><span class="part">2부 · 서버가 켜지기까지</span>5. 시작 순서</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 300" role="img" aria-label="python app.py 부터 요청 대기까지 여섯 단계와 실패·종료 갈래"><defs><marker id="m3d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m3acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m3warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m3ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="10" y="50" width="155" height="90" rx="8" class="bx "/><text x="87.5" y="83" text-anchor="middle" class="t">① .env 올리기</text><text x="87.5" y="101" text-anchor="middle" class="s">app/__init__.py</text><text x="87.5" y="117" text-anchor="middle" class="s">load_dotenv</text><rect x="175" y="50" width="155" height="90" rx="8" class="bx "/><text x="252.5" y="83" text-anchor="middle" class="t">② DB 표 준비</text><text x="252.5" y="101" text-anchor="middle" class="s">apply_schema</text><text x="252.5" y="117" text-anchor="middle" class="s">설치 또는 마이그레이션</text><polyline points="165,95 175,95" class="ln " marker-end="url(#m3d)"/><rect x="340" y="50" width="155" height="90" rx="8" class="bx "/><text x="417.5" y="83" text-anchor="middle" class="t">③ uvicorn.run</text><text x="417.5" y="101" text-anchor="middle" class="s">app.py</text><text x="417.5" y="117" text-anchor="middle" class="s">포트 열 준비</text><polyline points="330,95 340,95" class="ln " marker-end="url(#m3d)"/><rect x="505" y="50" width="155" height="90" rx="8" class="bx "/><text x="582.5" y="83" text-anchor="middle" class="t">④ main.py 읽기</text><text x="582.5" y="101" text-anchor="middle" class="s">미들웨어·라우터·</text><text x="582.5" y="117" text-anchor="middle" class="s">오류처리기 등록</text><polyline points="495,95 505,95" class="ln " marker-end="url(#m3d)"/><rect x="670" y="50" width="155" height="90" rx="8" class="bx "/><text x="747.5" y="83" text-anchor="middle" class="t">⑤ lifespan 앞</text><text x="747.5" y="101" text-anchor="middle" class="s">연결 풀 열기</text><text x="747.5" y="117" text-anchor="middle" class="s">(최소 2개 접속 확인)</text><polyline points="660,95 670,95" class="ln " marker-end="url(#m3d)"/><rect x="835" y="50" width="155" height="90" rx="8" class="bx acc"/><text x="912.5" y="83" text-anchor="middle" class="t">⑥ 요청 받기</text><text x="912.5" y="101" text-anchor="middle" class="s">lifespan 의 yield</text><text x="912.5" y="117" text-anchor="middle" class="s">에서 대기 중</text><polyline points="825,95 835,95" class="ln " marker-end="url(#m3d)"/><text x="500" y="30" text-anchor="middle" class="s">python app.py  →  (한 번만 일어나는 준비)</text><rect x="175" y="200" width="155" height="70" rx="8" class="bx warn"/><text x="252.5" y="231" text-anchor="middle" class="t">DB 접속 실패</text><text x="252.5" y="249" text-anchor="middle" class="s">서버를 켜지 않고 종료</text><polyline points="252,140 252,200" class="ln warn" marker-end="url(#m3warn)"/><rect x="670" y="200" width="155" height="70" rx="8" class="bx "/><text x="747.5" y="231" text-anchor="middle" class="t">lifespan 의 yield 뒤</text><text x="747.5" y="249" text-anchor="middle" class="s">연결 풀 닫기</text><rect x="835" y="200" width="155" height="70" rx="8" class="bx "/><text x="912.5" y="231" text-anchor="middle" class="t">종료 신호</text><text x="912.5" y="249" text-anchor="middle" class="s">Ctrl+C / SIGTERM</text><polyline points="912,140 912,200" class="ln " marker-end="url(#m3d)"/><polyline points="835,235 825,235" class="ln " marker-end="url(#m3d)"/></svg><figcaption>서버를 켜는 동안에는 API 함수가 하나도 실행되지 않습니다. 준비(①~⑤)가 끝나야 ⑥에서 요청을 받기 시작하고, DB 에 접속할 수 없으면 ②에서 멈춰 서버 자체가 켜지지 않습니다.</figcaption></figure>
+<pre>
+# app.py (요약)  📍 app.py:28
+import app                                   ① .env 올리기
+def main():
+    if sys.platform == "win32": ...          윈도우만: 이벤트 루프 방식 변경
+    apply_schema(get_settings().database_url)   ② DB 표 준비
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port,
+                proxy_headers=True, forwarded_allow_ips="*")   ③ 웹서버 → ④ main.py 읽기 → ⑤ lifespan
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 python app.py 인가 (uvicorn 명령이 아니라)</b> — 회사 컨테이너 규칙이 "python app.py 로 시작" 입니다. 그래서 uvicorn 실행을 파이썬 코드 안으로 옮겼습니다.</p>
+<p><b>왜 DB 표 준비를 서버보다 먼저 하나</b> — 표가 없는 상태로 서버가 뜨면 첫 요청마다 500 이 납니다. 먼저 준비하고, 준비가 안 되면(접속 실패) 서버를 아예 켜지 않아야 원인이 로그 첫 줄에 바로 보입니다.</p>
+<p><b>왜 host="0.0.0.0"</b> — <code>127.0.0.1</code> 로 열면 같은 컴퓨터 안에서만 접속됩니다. 컨테이너 밖(플랫폼, 다른 PC)에서 들어오려면 모든 주소에서 받아야 합니다.</p>
+<p><b>왜 proxy_headers=True</b> — 회사에서는 앞단 프록시가 https 를 처리하고 우리 서버엔 http 로 넘깁니다. 프록시가 붙이는 <code>X-Forwarded-Proto</code> 등을 믿어야 서버가 "원래 https 였다" 를 압니다.</p>
+<p><b>왜 윈도우만 따로</b> — 윈도우의 기본 비동기 방식(Proactor)은 psycopg 비동기 연결과 맞지 않아 접속이 실패합니다. 맥·리눅스에서는 지나가는 줄입니다.</p>
+</div>
+
+<h2 id="c6"><span class="part">2부 · 서버가 켜지기까지</span>6. DB 표 준비 (apply_schema)</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 860 270" role="img" aria-label="apply_schema 가 기준 표 존재 여부로 설치와 마이그레이션을 고르는 갈림길"><defs><marker id="m4d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m4acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m4warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m4ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="300" y="20" width="260" height="64" rx="8" class="bx acc"/><text x="430.0" y="48" text-anchor="middle" class="t">sop_documents 표가 있나?</text><text x="430.0" y="66" text-anchor="middle" class="s">SELECT to_regclass('sop_documents')</text><rect x="40" y="150" width="300" height="76" rx="8" class="bx "/><text x="190.0" y="176" text-anchor="middle" class="t">처음 설치</text><text x="190.0" y="194" text-anchor="middle" class="s">sql/sop/schema.sql 전체 실행</text><text x="190.0" y="210" text-anchor="middle" class="s">표 5개 + 인덱스 생성</text><rect x="520" y="150" width="300" height="76" rx="8" class="bx "/><text x="670.0" y="176" text-anchor="middle" class="t">갱신 (마이그레이션)</text><text x="670.0" y="194" text-anchor="middle" class="s">migrations/001…, 002… 이름순 실행</text><text x="670.0" y="210" text-anchor="middle" class="s">전부 멱등이라 매번 돌려도 안전</text><polyline points="360,84 360,115 190,115 190,150" class="ln " marker-end="url(#m4d)"/><text x="275" y="108" text-anchor="middle" class="s lb">없음</text><polyline points="500,84 500,115 670,115 670,150" class="ln " marker-end="url(#m4d)"/><text x="585" y="108" text-anchor="middle" class="s lb">있음</text><text x="430" y="258" text-anchor="middle" class="s">pg_trgm 확장을 쓸 수 없는 DB 면 그 줄만 빼고 실행 (검색 속도만 약간 차이)</text></svg><figcaption>업무(MODULES)마다 "기준 표" 하나만 보고 새 DB 인지 기존 DB 인지 판단합니다. 버전 번호표를 따로 두지 않는 대신 마이그레이션 파일을 전부 멱등으로 써서 단순하게 유지합니다.</figcaption></figure>
+<p>📍 <code>app/core/apply_schema.py:113</code> — <code>MODULES = (("sop", "sop_documents"),)</code> 에 적힌 업무마다 기준 표가 있는지 보고 갈림길을 고릅니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 "멱등" 마이그레이션인가</b> — 보통은 "몇 번 마이그레이션까지 적용했다" 는 기록 표를 둡니다(Alembic 등). 여기서는 표를 몇 개 안 바꾸므로, 대신 모든 마이그레이션을 <code>IF NOT EXISTS</code>, <code>IF EXISTS</code> 로 써서 <b>매번 전부 다시 돌려도 결과가 같게</b> 했습니다. 도구가 단순해지는 대신, 마이그레이션을 쓸 때 항상 멱등으로 써야 한다는 약속이 생깁니다.</p>
+<p><b>왜 새 설치는 schema.sql 한 방인가</b> — 새 DB 에 001, 002 를 차례로 쌓는 것보다 "최종 모양" 한 파일이 읽기 쉽습니다. 그래서 schema.sql 은 항상 최신 모양이고, 001(ref_document_id 추가)·002(sop_drafts 삭제)는 그 이전에 만든 옛 DB 를 위한 것입니다. 지금 schema.sql 로 만든 DB 에서는 아무 일도 하지 않습니다.</p>
+<p><b>왜 pg_trgm 이 없어도 진행하나</b> — 회사 DB 에서 <code>CREATE EXTENSION</code> 권한이 없는 경우가 흔합니다. pg_trgm 은 "이름 부분 검색" 을 빠르게 하는 인덱스용이라, 없으면 그 줄만 빼고 진행합니다. 기능은 같고 속도만 다릅니다.</p>
+<p><b>왜 이 도구는 동기(psycopg.connect)인가</b> — 서버가 뜨기 전에 한 번 도는 스크립트라 비동기가 필요 없습니다. <code>python -m app.core.apply_schema --dry-run</code> 처럼 따로 실행할 수도 있습니다.</p>
+</div>
+
+<h2 id="c7"><span class="part">2부 · 서버가 켜지기까지</span>7. 연결 풀과 lifespan</h2>
+<p>uvicorn 이 <code>app/main.py</code> 를 읽으면 위에서부터 차례로 로그 설정 → <code>app = FastAPI(...)</code> → 오류 처리기 → 미들웨어 → 라우터 → 헬스체크·"/" 등록이 일어납니다. 여기까지는 "어떤 요청이 오면 무엇을 할지" 를 <b>등록</b>만 하는 단계입니다. 그다음 요청을 받기 직전에 <b>lifespan</b> 이 실행됩니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 230" role="img" aria-label="lifespan 과 get_conn 이 같은 yield 모양으로 앞-중간-뒤 세 구간을 갖는 모습"><defs><marker id="m5d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m5acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m5warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m5ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><text x="10" y="68" text-anchor="start" class="t">lifespan (서버 1개에 1번)</text><rect x="250" y="30" width="200" height="70" rx="8" class="bx "/><text x="350.0" y="61" text-anchor="middle" class="t">open_pool()</text><text x="350.0" y="79" text-anchor="middle" class="s">풀 열기</text><rect x="490" y="30" width="260" height="70" rx="8" class="bx acc"/><text x="620.0" y="61" text-anchor="middle" class="t">yield</text><text x="620.0" y="79" text-anchor="middle" class="s">서버가 요청을 받는 동안 내내</text><rect x="790" y="30" width="200" height="70" rx="8" class="bx "/><text x="890.0" y="61" text-anchor="middle" class="t">close_pool()</text><text x="890.0" y="79" text-anchor="middle" class="s">풀 닫기</text><polyline points="450,65 490,65" class="ln " marker-end="url(#m5d)"/><polyline points="750,65 790,65" class="ln " marker-end="url(#m5d)"/><text x="10" y="168" text-anchor="start" class="t">get_conn (요청 1개에 1번)</text><rect x="250" y="130" width="200" height="70" rx="8" class="bx "/><text x="350.0" y="161" text-anchor="middle" class="t">pool.connection()</text><text x="350.0" y="179" text-anchor="middle" class="s">연결 빌림</text><rect x="490" y="130" width="260" height="70" rx="8" class="bx acc"/><text x="620.0" y="161" text-anchor="middle" class="t">yield conn</text><text x="620.0" y="179" text-anchor="middle" class="s">API 함수가 conn 을 씀</text><rect x="790" y="130" width="200" height="70" rx="8" class="bx "/><text x="890.0" y="161" text-anchor="middle" class="t">with 블록 끝</text><text x="890.0" y="179" text-anchor="middle" class="s">연결 반납 (오류여도)</text><polyline points="450,165 490,165" class="ln " marker-end="url(#m5d)"/><polyline points="750,165 790,165" class="ln " marker-end="url(#m5d)"/><text x="350" y="222" text-anchor="middle" class="s">yield 앞 = 시작할 때</text><text x="620" y="222" text-anchor="middle" class="s">yield = 빌려준 채 멈춤</text><text x="890" y="222" text-anchor="middle" class="s">yield 뒤 = 끝날 때</text></svg><figcaption><code>yield</code> 하나로 "준비 → 빌려주기 → 뒷정리" 를 한 함수 안에 적는 패턴입니다. 서버 전체(lifespan)와 요청 하나(get_conn)가 똑같은 모양이라, 하나를 이해하면 다른 하나도 읽힙니다.</figcaption></figure>
+<pre>
+@asynccontextmanager                         📍 app/main.py:49
+async def lifespan(app):
+    await db.open_pool(settings.database_url, settings.pool_min_size, settings.pool_max_size, ...)
+    yield                                    ← 서버가 사는 동안 여기서 멈춰 있음
+    await db.close_pool()
+</pre>
+<p><b>연결 풀</b>은 DB 연결을 미리 몇 개 열어 두고 요청마다 빌려주고 돌려받는 창구입니다 (📍 <code>app/core/db.py</code>).</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 풀인가</b> — DB 연결 하나를 새로 맺는 데는 수십 ms(네트워크 왕복, 인증, 세션 설정)가 걸립니다. 요청마다 새로 맺으면 그 시간이 매번 더해지고, 동시 요청이 몰리면 DB 의 연결 수 한도를 넘깁니다. 풀은 "최소 2개 유지, 최대 10개" 로 둘 다 막습니다.</p>
+<p><b>왜 wait=True 로 실제 접속을 확인하나</b> — 접속이 안 되는데 서버만 켜져 있으면, 문제는 첫 사용자 요청에서야 500 으로 드러납니다. 시작할 때 확인하고 실패하면 한국어로 원인(주소·방화벽·비밀번호)을 남기고 멈춥니다.</p>
+<p><b>왜 빌려줄 때마다 check, 30분 max_lifetime</b> — 회사 방화벽이나 중계기는 오래 놀고 있는 연결을 소리 없이 끊습니다. 빌려줄 때 살아 있는지 확인하고, 오래된 연결은 주기적으로 새로 맺어 "끊긴 연결로 쿼리 → 500" 을 막습니다.</p>
+<p><b>왜 row_factory=dict_row</b> — 결과를 <code>row[2]</code> 대신 <code>row["sop_no"]</code> 로 읽을 수 있어 코드가 훨씬 읽기 쉽습니다.</p>
+<p><b>왜 autocommit=True 가 기본</b> — 조회나 한 줄짜리 수정은 바로 확정되면 됩니다. 여러 줄을 묶어야 할 때만 명시적으로 <code>conn.transaction()</code> 을 씁니다(19장). "묶는 곳" 이 코드에 눈에 보이게 드러납니다.</p>
+<p><b>왜 timezone=UTC 세션 옵션</b> — 회사 DB 의 기본 시간대가 KST 든 무엇이든, 서버가 받는 시각은 항상 UTC 로 통일합니다. 응답에서도 <code>...Z</code> 로 내보내고, 한국 시간 표시는 브라우저가 합니다.</p>
+<p><b>왜 prepare_threshold 를 끌 수 있게</b> — 회사 DB 앞에 PgBouncer(트랜잭션 풀링)가 있으면 요청마다 실제 DB 연결이 바뀌어 "미리 준비된 문장" 이 사라집니다. 그런 환경이면 <code>DB_PREPARE_THRESHOLD=0</code>.</p>
+<p><b>왜 lifespan 인가</b> — 풀은 서버당 하나, 시작에 열고 끝에 닫아야 합니다. FastAPI 가 그 "시작/끝" 자리로 제공하는 것이 lifespan 이고, yield 앞뒤로 적는 모양이 그 약속입니다.</p>
+</div>
+
+<!-- ============================================================ 3부 -->
+<h2 id="c8"><span class="part">3부 · 요청 하나의 여정</span>8. 전체 순서 한눈에</h2>
+<p>이제 서버가 켜져 있습니다. 사용자가 기존 문서를 고치고 <b>라이브러리에 저장</b>을 누른 순간을 따라갑니다 (<code>PUT /api/sops/{id}</code>). 다른 API 도 전부 이 모양을 그대로 따르니, 이것 하나만 잡으면 나머지는 응용입니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 700" role="img" aria-label="PUT /api/sops/{id} 저장 요청이 브라우저, 미들웨어, FastAPI, 저장 함수, 연결 풀과 DB 를 오가는 순서"><defs><marker id="m6d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m6acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m6warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m6ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="15" y="14" width="170" height="50" rx="8" class="bx "/><text x="100.0" y="35" text-anchor="middle" class="t">브라우저</text><text x="100.0" y="53" text-anchor="middle" class="s">sopstudio.html</text><polyline points="100,64 100,690" class="ln dash faint"/><rect x="205" y="14" width="170" height="50" rx="8" class="bx "/><text x="290.0" y="35" text-anchor="middle" class="t">미들웨어</text><text x="290.0" y="53" text-anchor="middle" class="s">log_and_limit</text><polyline points="290,64 290,690" class="ln dash faint"/><rect x="405" y="14" width="170" height="50" rx="8" class="bx "/><text x="490.0" y="35" text-anchor="middle" class="t">FastAPI</text><text x="490.0" y="53" text-anchor="middle" class="s">라우팅 + Depends</text><polyline points="490,64 490,690" class="ln dash faint"/><rect x="605" y="14" width="170" height="50" rx="8" class="bx acc"/><text x="690.0" y="35" text-anchor="middle" class="t">save_document</text><text x="690.0" y="53" text-anchor="middle" class="s">app/sop/sops.py</text><polyline points="690,64 690,690" class="ln dash faint"/><rect x="805" y="14" width="170" height="50" rx="8" class="bx "/><text x="890.0" y="35" text-anchor="middle" class="t">연결 풀 / DB</text><text x="890.0" y="53" text-anchor="middle" class="s">db.py · PostgreSQL</text><polyline points="890,64 890,690" class="ln dash faint"/><polyline points="100,100 284,100" class="ln " marker-end="url(#m6d)"/><text x="195" y="93" text-anchor="middle" class="s lb">① PUT /api/sops/{id} · X-User · JSON</text><circle cx="290" cy="130" r="4" class="dot "/><text x="300" y="134" text-anchor="start" class="s  lb">② 20MB 넘으면 여기서 413 반환</text><polyline points="290,165 484,165" class="ln " marker-end="url(#m6d)"/><text x="390" y="158" text-anchor="middle" class="s lb">③ call_next(request)</text><circle cx="490" cy="195" r="4" class="dot "/><text x="500" y="199" text-anchor="start" class="s  lb">④ 주소 → save_document 선택</text><circle cx="490" cy="222" r="4" class="dot "/><text x="500" y="226" text-anchor="start" class="s  lb">⑤ current_user: 헤더 → "홍길동"</text><polyline points="490,255 884,255" class="ln " marker-end="url(#m6d)"/><text x="690" y="248" text-anchor="middle" class="s lb">⑥ get_conn: 연결 하나 빌림</text><polyline points="890,285 496,285" class="ln dash" marker-end="url(#m6d)"/><text x="690" y="278" text-anchor="middle" class="s lb">conn (yield 로 빌려준 채 멈춤)</text><circle cx="490" cy="315" r="4" class="dot "/><text x="500" y="319" text-anchor="start" class="s  lb">⑦ 바디 → SaveRequest 검사 (틀리면 422)</text><polyline points="490,350 684,350" class="ln " marker-end="url(#m6d)"/><text x="590" y="343" text-anchor="middle" class="s lb">⑧ save_document(doc_id, body, user, conn)</text><polyline points="690,390 884,390" class="ln acc" marker-end="url(#m6acc)"/><text x="790" y="383" text-anchor="middle" class="s lb">⑨ BEGIN · FOR UPDATE · INSERT · UPDATE · COMMIT</text><polyline points="890,425 696,425" class="ln dash" marker-end="url(#m6d)"/><text x="790" y="418" text-anchor="middle" class="s lb">결과 행</text><circle cx="690" cy="455" r="4" class="dot warn"/><text x="700" y="459" text-anchor="start" class="s warn lb">409 · 400 이면 ROLLBACK 후 ApiError</text><polyline points="690,490 496,490" class="ln dash" marker-end="url(#m6d)"/><text x="590" y="483" text-anchor="middle" class="s lb">⑩ SaveResponse → JSON, 201</text><polyline points="490,525 884,525" class="ln " marker-end="url(#m6d)"/><text x="690" y="518" text-anchor="middle" class="s lb">⑪ yield 뒤 실행 → 연결 반납</text><polyline points="490,560 296,560" class="ln dash" marker-end="url(#m6d)"/><text x="390" y="553" text-anchor="middle" class="s lb">response</text><circle cx="290" cy="592" r="4" class="dot "/><text x="300" y="596" text-anchor="start" class="s  lb">⑫ 로그: PUT /api/sops/… -&gt; 201 (35 ms)</text><polyline points="290,630 106,630" class="ln dash" marker-end="url(#m6d)"/><text x="195" y="623" text-anchor="middle" class="s lb">⑬ 201 + JSON (실패면 {"error": …})</text><circle cx="100" cy="662" r="4" class="dot "/><text x="110" y="666" text-anchor="start" class="s  lb">⑭ api() 가 결과/오류를 화면에 전달</text></svg><figcaption>한 요청 안에서 일어나는 일 전부입니다. 실선은 호출, 점선은 돌려받는 값입니다. API 함수(⑧)가 실행되기 <b>전에</b> 크기 검사·사용자 확인·연결 대여·바디 검사가 이미 끝나 있고, 함수가 끝난 <b>뒤에</b> 연결 반납과 로그가 자동으로 이어집니다.</figcaption></figure>
+<p>아래 장(9~16)은 이 그림의 번호를 하나씩 확대해서 봅니다.</p>
+
+<h2 id="c9"><span class="part">3부 · 요청 하나의 여정</span>9. 브라우저: api() 가 요청을 만든다 (①)</h2>
+<pre>
+async function api(method, path, body) {          📍 static/sop/sopstudio.html:3801
+  const res = await fetch(apiUrl(path), {
+    method,
+    headers: { 'Content-Type': 'application/json',   ← "바디는 JSON" (HTTP 표준 헤더)
+               'X-User': userHeaderValue() },        ← "보낸 사람" (우리가 지은 헤더, 한글은 % 인코딩)
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  let data = null; try { data = await res.json(); } catch (e) {}
+  if (!res.ok) {                                      ← 200번대가 아니면
+    const err = new Error(data?.error?.message || ('HTTP ' + res.status));
+    err.status = res.status; err.code = data?.error?.code; err.data = data?.error;
+    throw err;                                         ← 부르는 쪽이 status/code 로 분기
+  }
+  return data;
+}
+</pre>
+<p>요청 = <b>메서드</b>(GET 조회, POST 생성, PUT 교체/추가, PATCH 일부 수정, DELETE 삭제) + <b>주소</b> + <b>헤더</b>(이름표들) + <b>바디</b>(내용물, GET 은 보통 없음).</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 모든 요청을 한 함수로</b> — 헤더 붙이기, 주소 접두어(<code>apiUrl</code>), 오류 해석을 한 곳에서 합니다. 나중에 SSO 로 바뀌어 X-User 를 없앨 때도 이 함수 하나만 고치면 됩니다.</p>
+<p><b>왜 X-User 를 % 인코딩하나</b> — HTTP 헤더에는 원칙적으로 영문·숫자만 실을 수 있습니다. "홍길동" 은 <code>encodeURIComponent</code> 로 <code>%ED%99%8D…</code> 로 바꿔 보내고, 서버의 <code>current_user</code> 가 <code>unquote</code> 로 되돌립니다.</p>
+<p><b>왜 apiUrl() 과 api-base meta</b> — 회사에서 서버가 <code>https://host/sop/</code> 처럼 접두어 뒤에 있으면 <code>/api/sops</code> 가 아니라 <code>/sop/api/sops</code> 로 불러야 합니다. 서버가 HTML 을 내려줄 때 <code>&lt;meta name="api-base" content="/sop"&gt;</code> 를 끼워 넣고(📍 <code>main.py:155</code>), 프론트가 그 값을 앞에 붙입니다. HTML 을 접두어마다 따로 만들 필요가 없습니다.</p>
+</div>
+
+<h2 id="c10"><span class="part">3부 · 요청 하나의 여정</span>10. 미들웨어: 모든 요청의 앞문 (②, ⑫)</h2>
+<p>요청이 서버에 닿으면 uvicorn 이 날것의 HTTP 글자를 <code>Request</code> 객체(요청 정보 상자)로 포장하고, 가장 먼저 미들웨어를 지나갑니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 200" role="img" aria-label="미들웨어가 양파 껍질처럼 요청과 응답을 감싸는 구조"><defs><marker id="m7d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m7acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m7warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m7ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="20" width="960" height="160" rx="16" class="bx"/><text x="40" y="44" text-anchor="start" class="s">CORS (나중에 등록 = 가장 바깥)</text><rect x="70" y="56" width="860" height="110" rx="14" class="bx acc"/><text x="90" y="80" text-anchor="start" class="s">log_and_limit — 앞: 크기 검사·시간 시작 / 뒤: 로그 한 줄</text><rect x="330" y="96" width="340" height="56" rx="10" class="bx"/><text x="500" y="120" text-anchor="middle" class="t mono">call_next(request)</text><text x="500" y="140" text-anchor="middle" class="s">라우팅 → Depends → API 함수</text><polyline points="110,124 330,124" class="ln " marker-end="url(#m7d)"/><text x="220" y="116" text-anchor="middle" class="s lb">요청</text><polyline points="670,124 890,124" class="ln " marker-end="url(#m7d)"/><text x="780" y="116" text-anchor="middle" class="s lb">응답</text></svg><figcaption>미들웨어는 모든 요청을 감싸는 껍질입니다. <code>call_next</code> 앞의 코드는 API 함수 전에, 뒤의 코드는 응답이 만들어진 뒤에 실행됩니다. 앞에서 바로 <code>return</code> 하면(413) 안쪽은 실행되지 않습니다.</figcaption></figure>
+<pre>
+@app.middleware("http")                              📍 app/main.py:75
+async def log_and_limit(request: Request, call_next):
+    started = time.perf_counter()
+    content_length = request.headers.get("content-length")
+    if content_length is not None and content_length.isdigit() and int(content_length) > max_bytes:
+        return JSONResponse(status_code=413, content=error_body("payload_too_large", ...))   ← 안쪽은 실행 안 됨
+    status = "ERROR"
+    try:
+        response = await call_next(request)          ← 라우팅 → Depends → API 함수 → 응답
+        status = response.status_code
+        return response
+    finally:
+        log.info("%s %s -> %s (%.0f ms)", request.method, request.url.path, status, elapsed_ms)
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 크기 제한을 미들웨어에서</b> — 문서 JSON 에는 이미지가 base64 로 들어가 커질 수 있습니다. 20MB 를 넘는 요청은 바디를 읽기도 전에 헤더만 보고 돌려보내야 메모리를 아낍니다. API 마다 검사하면 빠뜨리는 곳이 생깁니다.</p>
+<p><b>왜 finally 에서 로그</b> — 정상 응답이든, 중간에 예외로 끝났든(500) 로그 한 줄은 꼭 남기기 위해서입니다. 예외일 때는 status 가 "ERROR" 로 찍힙니다.</p>
+<p><b>왜 함수 모양이 (request, call_next) 인가</b> — FastAPI(Starlette) 가 미들웨어를 부를 때 넣어 주기로 정한 약속입니다. <code>call_next</code> 는 "다음 단계를 실행하고 응답을 돌려주는 함수" 입니다.</p>
+<p><b>왜 CORS 를 나중에 등록</b> — 나중에 등록한 미들웨어가 가장 바깥 껍질이 됩니다. CORS 가 바깥이어야 413 같은 안쪽의 즉시 응답에도 CORS 헤더가 붙어 브라우저가 오류 내용을 읽을 수 있습니다.</p>
+<p><b>접근 기록(누가 무엇을 불렀나)을 남기려면</b> 바로 이 자리에 붙입니다 → <a href="#c28">28장</a>.</p>
+</div>
+
+<h2 id="c11"><span class="part">3부 · 요청 하나의 여정</span>11. 라우팅: 주소로 함수를 찾는다 (④)</h2>
+<pre>
+# app/sop/sops.py
+router = APIRouter(tags=["sops"])
+@router.put("/sops/{doc_id}", response_model=SaveResponse, status_code=201)     📍 sops.py:385
+async def save_document(doc_id: UUID, body: SaveRequest, ...):
+
+# app/sop/__init__.py — 파일 3개의 라우터를 하나로
+router = APIRouter()
+router.include_router(sops.router); router.include_router(versions.router); router.include_router(locks.router)
+
+# app/main.py — 그 하나를 /api 아래에, 공통 검사와 함께                        📍 main.py:120-123
+API_GUARD = [Depends(current_user)]
+app.include_router(sop_router, prefix="/api", dependencies=API_GUARD)
+</pre>
+<p><code>PUT /api/sops/3f2a…</code> → prefix <code>/api</code> + <code>/sops/{doc_id}</code> 와 맞으므로 <code>save_document</code> 가 선택됩니다. <code>{doc_id}</code> 자리 글자는 <code>doc_id: UUID</code> 로 들어가고, UUID 모양이 아니면 함수 실행 전에 422 입니다. 맞는 주소가 없으면 404.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 /api 를 한 곳에서 붙이나</b> — 각 파일은 <code>/sops…</code> 만 알고, 앞에 무엇이 붙을지는 main.py 가 정합니다. 새 업무는 <code>prefix="/api/opl"</code> 처럼 붙이면 주소가 겹치지 않습니다.</p>
+<p><b>왜 dependencies=API_GUARD 를 라우터에</b> — "모든 API 에 공통으로 거는 검사" 자리를 미리 만들어 둔 것입니다. 지금은 이름만 읽지만, 여기를 권한 검사로 바꾸면 API 전체가 한 번에 보호됩니다(<a href="#c27">27장</a>).</p>
+<p><b>왜 데코레이터(@)</b> — 함수 정의 바로 위에 "이 함수는 PUT /sops/{doc_id} 담당" 을 붙여 두면, 주소와 함수가 한눈에 같이 보입니다. 별도의 주소 표를 관리할 필요가 없습니다.</p>
+</div>
+
+<h2 id="c12"><span class="part">3부 · 요청 하나의 여정</span>12. Depends: 함수 전에 재료를 준비한다 (⑤, ⑥)</h2>
+<p>함수를 찾았다고 바로 실행하지 않습니다. FastAPI 는 먼저 함수의 <b>파라미터 목록</b>을 보고 칸마다 무엇을 넣을지 정합니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 330" role="img" aria-label="save_document 의 파라미터 네 개가 각각 어디서 채워지는지 보여 주는 의존성 나무"><defs><marker id="m8d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m8acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m8warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m8ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="330" y="20" width="340" height="56" rx="8" class="bx acc"/><text x="500.0" y="44" text-anchor="middle" class="t">save_document(doc_id, body, user, conn)</text><text x="500.0" y="62" text-anchor="middle" class="s">FastAPI 가 네 칸을 채운 뒤에 호출</text><rect x="20" y="130" width="225" height="56" rx="8" class="bx "/><text x="132.5" y="154" text-anchor="middle" class="t">doc_id: UUID</text><text x="132.5" y="172" text-anchor="middle" class="s">주소의 {doc_id}</text><rect x="20" y="250" width="225" height="56" rx="8" class="bx dash"/><text x="132.5" y="274" text-anchor="middle" class="t">주소</text><text x="132.5" y="292" text-anchor="middle" class="s">/api/sops/3f2a…</text><polyline points="132,250 132,186" class="ln " marker-end="url(#m8d)"/><text x="138" y="222" text-anchor="start" class="s lb">읽음</text><polyline points="132,130 350,76" class="ln " marker-end="url(#m8d)"/><rect x="265" y="130" width="225" height="56" rx="8" class="bx "/><text x="377.5" y="154" text-anchor="middle" class="t">body: SaveRequest</text><text x="377.5" y="172" text-anchor="middle" class="s">pydantic 검사</text><rect x="265" y="250" width="225" height="56" rx="8" class="bx dash"/><text x="377.5" y="274" text-anchor="middle" class="t">요청 바디 JSON</text><text x="377.5" y="292" text-anchor="middle" class="s">{doc, base_version_no…}</text><polyline points="377,250 377,186" class="ln " marker-end="url(#m8d)"/><text x="383" y="222" text-anchor="start" class="s lb">읽음</text><polyline points="377,130 377,76" class="ln " marker-end="url(#m8d)"/><rect x="510" y="130" width="225" height="56" rx="8" class="bx "/><text x="622.5" y="154" text-anchor="middle" class="t">user = Depends(current_user)</text><text x="622.5" y="172" text-anchor="middle" class="s">deps.py</text><rect x="510" y="250" width="225" height="56" rx="8" class="bx dash"/><text x="622.5" y="274" text-anchor="middle" class="t">Request.headers</text><text x="622.5" y="292" text-anchor="middle" class="s">USER_HEADER 이름의 헤더</text><polyline points="622,250 622,186" class="ln " marker-end="url(#m8d)"/><text x="628" y="222" text-anchor="start" class="s lb">읽음</text><polyline points="622,130 622,76" class="ln " marker-end="url(#m8d)"/><rect x="755" y="130" width="225" height="56" rx="8" class="bx "/><text x="867.5" y="154" text-anchor="middle" class="t">conn = Depends(get_conn)</text><text x="867.5" y="172" text-anchor="middle" class="s">db.py · yield</text><rect x="755" y="250" width="225" height="56" rx="8" class="bx dash"/><text x="867.5" y="274" text-anchor="middle" class="t">연결 풀</text><text x="867.5" y="292" text-anchor="middle" class="s">lifespan 에서 연 풀</text><polyline points="867,250 867,186" class="ln " marker-end="url(#m8d)"/><text x="873" y="222" text-anchor="start" class="s lb">읽음</text><polyline points="867,130 650,76" class="ln " marker-end="url(#m8d)"/></svg><figcaption><code>Depends(...)</code> 는 "이 칸은 이 함수의 결과로 채워 줘" 라는 표시입니다. 의존성 함수(<code>current_user</code>, <code>get_conn</code>)도 자기 파라미터가 있으면 FastAPI 가 같은 방식으로 한 단계 더 내려가 채웁니다.</figcaption></figure>
+<pre>
+async def save_document(
+    doc_id: UUID,                                  ← 주소에서
+    body: SaveRequest,                             ← 바디 JSON 에서 (pydantic 검사)
+    user: str = Depends(current_user),             ← current_user 를 실행한 결과
+    conn: AsyncConnection = Depends(get_conn),     ← get_conn 을 실행한 결과 (yield 한 값)
+):
+</pre>
+<p><code>user: str = Depends(current_user)</code> 를 조각내면: <code>user</code>(이름) <code>: str</code>(타입) <code>= Depends(current_user)</code>(기본값 자리에 놓은 <b>표시</b>). 파이썬 입장에서는 기본값이지만, FastAPI 는 이 표시를 보고 "요청이 오면 <code>current_user</code> 를 실행해서 그 결과를 넣자" 로 읽습니다. <code>current_user()</code> 처럼 괄호를 붙이지 않고 <b>함수 자체</b>를 넘기는 이유가 이것입니다 — 실행은 나중에, 요청마다.</p>
+<pre>
+def current_user(request: Request) -> str:        📍 app/core/deps.py:26
+    header_name = get_settings().user_header       ← .env 의 USER_HEADER (기본 X-User)
+    raw = request.headers.get(header_name) or ""
+    name = unquote(raw).strip()                    ← %ED%99%8D… → 홍길동
+    return name or "anonymous"
+</pre>
+<p><code>current_user</code> 의 <code>request: Request</code> 도 FastAPI 가 채웁니다. 이름이 request 라서가 아니라 <b>타입이 Request 라서</b>입니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 Depends 인가</b> — 없으면 API 14개마다 "헤더 꺼내기 + 디코딩 + 연결 빌리기 + 반납" 을 복사해야 합니다. 헤더 이름이 바뀌면 14군데를 고쳐야 하고요. Depends 는 공통 준비물을 함수 하나로 빼서 필요한 곳에 꽂는 장치입니다.</p>
+<p><b>요청당 한 번</b> — API_GUARD 와 파라미터 양쪽에 <code>current_user</code> 가 있지만, 같은 요청 안에서는 한 번만 실행하고 결과를 나눠 씁니다.</p>
+<p><b>중간에 막을 수 있음</b> — 의존성 안에서 예외(401/403)를 던지면 API 함수 본문은 아예 실행되지 않습니다. 그래서 권한 검사가 이 자리에 들어갑니다.</p>
+<p><b>테스트에서 바꿔 끼우기</b> — <code>app.dependency_overrides[current_user] = lambda: "테스트유저"</code> 한 줄로 가짜 사용자를 넣을 수 있습니다.</p>
+<p><b>왜 헤더 이름을 환경변수로</b> — 회사 SSO 가 어떤 이름의 헤더를 붙일지 아직 모르기 때문입니다. 코드를 고치지 않고 .env 한 줄로 바꿀 수 있게 했습니다.</p>
+</div>
+
+<h2 id="c13"><span class="part">3부 · 요청 하나의 여정</span>13. get_conn 과 yield: 빌려주고, 끝나면 돌려받기 (⑥, ⑪)</h2>
+<pre>
+async def get_conn() -> AsyncIterator[AsyncConnection]:     📍 app/core/db.py
+    if pool is None:
+        raise RuntimeError("DB 풀이 아직 열리지 않았습니다.")
+    async with pool.connection() as conn:   ① 풀에서 하나 빌림
+        yield conn                          ② 빌려준 채로 멈춤 → API 함수가 conn 사용
+                                            ③ API 가 끝나면 이어서 → with 블록 종료 → 반납
+</pre>
+<p><code>return</code> 은 값을 주고 함수가 끝나지만, <code>yield</code> 는 값을 주고 <b>멈췄다가</b> 나중에 이어서 실행됩니다. yield 가 들어간 함수를 <b>제너레이터</b>라 하고, 제너레이터는 "값을 하나씩 내주는 것(이터레이터)" 의 한 종류입니다. 그래서 반환 타입을 넓게 <code>AsyncIterator[AsyncConnection]</code>("AsyncConnection 을 비동기로 내주는 것")로 적었습니다. 더 정확하게 <code>AsyncGenerator[AsyncConnection, None]</code> 로 써도 맞습니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 return 이 아니라 yield</b> — return 으로 연결을 주면 "언제 반납하나" 를 API 함수마다 직접 써야 하고, 오류가 나면 반납을 빠뜨려 풀이 말라 버립니다. yield 를 쓰면 FastAPI 가 응답 후에 yield 뒤를 실행해 주고, <code>async with</code> 가 오류여도 반납을 보장합니다.</p>
+<p><b>왜 요청 하나에 연결 하나</b> — 한 요청 안의 여러 SQL(잠금, 조회, INSERT)이 같은 연결에서 돌아야 트랜잭션으로 묶을 수 있습니다.</p>
+</div>
+
+<h2 id="c14"><span class="part">3부 · 요청 하나의 여정</span>14. 바디 검사: pydantic 모델 (⑦)</h2>
+<pre>
+class SaveRequest(BaseModel):                       📍 app/sop/schemas.py:86
+    doc: dict[str, Any]                             ← 필수. 편집기 JSON 통째
+    base_version_no: int | None = None              ← 내가 열었던 버전 (충돌 검사용)
+    change_note: str = ""
+    saved_by: str = ""                              ← 비면 헤더 값 (※ 알려진 문제 참고)
+</pre>
+<p>파라미터 타입이 <code>BaseModel</code> 이면 FastAPI 가 바디 JSON 을 이 모양으로 검사해서 객체로 만들어 줍니다. 필드가 없거나 타입이 틀리면 함수 실행 전에 <b>422</b>. 응답 쪽은 데코레이터의 <code>response_model=SaveResponse</code> 가 반환값을 그 모양으로 걸러 JSON 으로 만듭니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 모델을 따로 정의하나</b> — "이 API 는 무엇을 받고 무엇을 돌려주나" 가 코드 한 곳에 적힌 계약서가 됩니다. 서버를 켜고 <code>/docs</code> 를 열면 이 모델들로 API 설명서가 자동으로 만들어집니다.</p>
+<p><b>왜 doc 은 dict[str, Any] 로 느슨하게</b> — 편집기 JSON 은 템플릿이 늘 때마다 모양이 바뀝니다. pydantic 으로 전부 정의하면 템플릿 하나 추가할 때마다 서버를 고쳐야 합니다. 서버가 꼭 알아야 하는 몇 가지(format, version, blocks, sop.id)만 <code>validate_document</code> 가 직접 검사합니다(📍 <code>derive.py:168</code>).</p>
+<p><b>왜 시각은 UtcDatetime</b> — 응답의 모든 시각을 <code>2026-10-01T02:30:00Z</code> 처럼 UTC + Z 로 통일합니다(📍 <code>core/schemas.py</code>). 프론트가 시간대 계산을 한 가지 방식으로만 하면 됩니다.</p>
+</div>
+
+<h2 id="c15"><span class="part">3부 · 요청 하나의 여정</span>15. API 함수 본문과 async (⑧~⑩)</h2>
+<pre>
+async def save_document(doc_id, body, user, conn):     📍 app/sop/sops.py:386
+    validate_document(body.doc)                         ← 형식 (422)
+    meta = document_meta(body.doc)                      ← 번호·이름·AREA 꺼내기
+    who = body.saved_by.strip() or user                 ← 저장자 이름 (⚠ 바디 우선)
+    doc_row = await get_document_or_404(conn, doc_id)   ← 문서 있나 (404)
+    if meta.sop_no != doc_row["sop_no"]: raise ApiError(400, "sop_no_mismatch", ...)
+    async with conn.transaction():                      ← 묶음 시작
+        response = await _append_version(conn, doc_id, body, who, check_base_version=True)
+    response.warning = await _other_users_lock_warning(conn, doc_id, who)
+    return response                                     ← SaveResponse → JSON, 201
+</pre>
+<p><code>async def</code> 함수 안에서 <code>await</code> 는 "DB 답이 올 때까지 이 요청은 잠깐 내려놓고 다른 요청을 처리해" 라는 뜻입니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 async</b> — 요청 처리 시간의 대부분은 DB 답을 기다리는 시간입니다. 기다리는 동안 다른 요청을 처리하면 프로세스 하나로 많은 동시 요청을 받을 수 있습니다. 그래서 DB 연결도 비동기용(<code>AsyncConnection</code>)입니다.</p>
+<p><b>동기로 짰다면</b> — FastAPI 는 <code>def</code> 함수도 받아서 스레드에서 돌려 줍니다. 이 규모의 사내 도구라면 동기로도 충분히 돌아갑니다. 정말 조심할 것은 섞어 쓰기입니다: <code>async def</code> 안에서 동기 DB 호출을 하면 그동안 서버 전체가 멈춥니다.</p>
+<p><b>왜 검사를 트랜잭션 밖에서 한 번, 안에서 또 한 번</b> — 밖의 검사는 "빨리 실패" 용(잠금 없이 싸게), 안의 검사(📍 <code>sops.py:187</code> a, b)는 잠금을 잡은 뒤 "그 사이에 바뀌지 않았나" 를 확실히 하기 위해서입니다.</p>
+<p><b>왜 저장 본체(_append_version)를 POST 와 PUT 이 같이 쓰나</b> — 새 문서 첫 저장(v1)과 기존 문서 새 버전(vN)은 "버전 한 줄 추가" 라는 같은 일입니다. 차이는 충돌 검사 여부(check_base_version) 하나뿐입니다.</p>
+</div>
+
+<h2 id="c16"><span class="part">3부 · 요청 하나의 여정</span>16. 오류와 응답 (⑬, ⑭)</h2>
+<p>함수 어디서든 <code>raise ApiError(409, "version_conflict", "메시지", current_version_no=4)</code> 를 던지면 📍 <code>app/core/errors.py</code> 의 처리기가 받아 아래 모양으로 바꿉니다. pydantic 422, 없는 주소 404, 예상 못 한 500 도 전부 같은 모양입니다.</p>
+<pre>{ "error": { "code": "version_conflict", "message": "다른 사람이 먼저 v4 을(를) 저장했습니다…", "current_version_no": 4 } }</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 한 모양으로</b> — 프론트의 <code>api()</code> 가 <code>data.error.code</code> 하나만 보면 됩니다. 오류마다 모양이 다르면 화면 코드가 경우의 수만큼 늘어납니다.</p>
+<p><b>왜 code 와 message 를 나누나</b> — message 는 사람이 읽는 문장이라 바뀔 수 있고, code 는 프로그램이 <code>if</code> 로 비교하는 고정 이름입니다.</p>
+<p><b>왜 500 에는 자세한 내용을 안 넣나</b> — 스택트레이스에는 파일 경로, SQL 같은 내부 정보가 들어 있습니다. 응답에는 "서버 내부 오류" 만, 자세한 내용은 서버 로그에만 남깁니다.</p>
+<p><b>왜 Starlette 의 HTTPException 을 잡나</b> — "없는 주소(404)" 는 FastAPI 보다 아래층(Starlette)에서 만들어지므로, 부모 클래스를 잡아야 그것까지 같은 모양으로 바뀝니다.</p>
+</div>
+<p>응답이 미들웨어로 돌아오면 로그 한 줄이 찍히고(⑫), 브라우저의 <code>api()</code> 가 성공이면 데이터를, 실패면 <code>err.status</code>·<code>err.code</code> 를 담은 Error 를 던집니다(⑭). 화면이 이것으로 무엇을 하는지는 <a href="#c25">25장</a>.</p>
+
+<!-- ============================================================ 4부 -->
+<h2 id="c17"><span class="part">4부 · 데이터</span>17. DB 표 5개</h2>
+<p>이제 ⑨에서 DB 안에 무엇이 쓰이는지 볼 차례입니다. 먼저 표의 모양부터.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1180 620" role="img" aria-label="DB 표 다섯 개의 컬럼과 외래 키 관계"><defs><marker id="m9d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m9acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m9warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m9ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="20" width="300" height="216" rx="8" class="bx "/><rect x="20" y="20" width="300" height="34" rx="8" class="th "/><rect x="20" y="46" width="300" height="8" class="th "/><text x="32" y="42" text-anchor="start" class="t mono">sop_documents</text><text x="310" y="42" text-anchor="end" class="s">문서 1건 = 1행</text><text x="32" y="70" text-anchor="start" class="mono c pk">id</text><text x="310" y="70" text-anchor="end" class="s">uuid · PK</text><text x="32" y="92" text-anchor="start" class="mono c">sop_no</text><text x="310" y="92" text-anchor="end" class="s">text · UNIQUE</text><text x="32" y="114" text-anchor="start" class="mono c">name</text><text x="310" y="114" text-anchor="end" class="s">text</text><text x="32" y="136" text-anchor="start" class="mono c">area</text><text x="310" y="136" text-anchor="end" class="s">P/E/D/T/C/''</text><text x="32" y="158" text-anchor="start" class="mono c">status</text><text x="310" y="158" text-anchor="end" class="s">draft/review/approved/retired</text><text x="32" y="180" text-anchor="start" class="mono c fk">current_version_id</text><text x="310" y="180" text-anchor="end" class="s">uuid · FK</text><text x="32" y="202" text-anchor="start" class="mono c">created_by</text><text x="310" y="202" text-anchor="end" class="s">text</text><text x="32" y="224" text-anchor="start" class="mono c">created_at / updated_at</text><text x="310" y="224" text-anchor="end" class="s">timestamptz</text><rect x="460" y="20" width="300" height="216" rx="8" class="bx acc"/><rect x="460" y="20" width="300" height="34" rx="8" class="th acc"/><rect x="460" y="46" width="300" height="8" class="th acc"/><text x="472" y="42" text-anchor="start" class="t mono">sop_versions</text><text x="750" y="42" text-anchor="end" class="s">저장 1번 = 1행</text><text x="472" y="70" text-anchor="start" class="mono c pk">id</text><text x="750" y="70" text-anchor="end" class="s">uuid · PK</text><text x="472" y="92" text-anchor="start" class="mono c fk">document_id</text><text x="750" y="92" text-anchor="end" class="s">uuid · FK</text><text x="472" y="114" text-anchor="start" class="mono c">version_no</text><text x="750" y="114" text-anchor="end" class="s">1,2,3 …</text><text x="472" y="136" text-anchor="start" class="mono c">format / format_version</text><text x="750" y="136" text-anchor="end" class="s">편집기 형식</text><text x="472" y="158" text-anchor="start" class="mono c">content</text><text x="750" y="158" text-anchor="end" class="s">jsonb · JSON 통째</text><text x="472" y="180" text-anchor="start" class="mono c">revision / owner / tags</text><text x="750" y="180" text-anchor="end" class="s">표지 정보 사본</text><text x="472" y="202" text-anchor="start" class="mono c">change_note</text><text x="750" y="202" text-anchor="end" class="s">text</text><text x="472" y="224" text-anchor="start" class="mono c">saved_by / saved_at</text><text x="750" y="224" text-anchor="end" class="s">누가 / 언제</text><rect x="880" y="20" width="285" height="260" rx="8" class="bx "/><rect x="880" y="20" width="285" height="34" rx="8" class="th "/><rect x="880" y="46" width="285" height="8" class="th "/><text x="892" y="42" text-anchor="start" class="t mono">flow_nodes</text><text x="1155" y="42" text-anchor="end" class="s">순서도 상자</text><text x="892" y="70" text-anchor="start" class="mono c pk">id</text><text x="1155" y="70" text-anchor="end" class="s">uuid · PK</text><text x="892" y="92" text-anchor="start" class="mono c fk">version_id</text><text x="1155" y="92" text-anchor="end" class="s">uuid · FK</text><text x="892" y="114" text-anchor="start" class="mono c">instance_id</text><text x="1155" y="114" text-anchor="end" class="s">어느 순서도</text><text x="892" y="136" text-anchor="start" class="mono c">node_key</text><text x="1155" y="136" text-anchor="end" class="s">seq_3 …</text><text x="892" y="158" text-anchor="start" class="mono c">node_type</text><text x="1155" y="158" text-anchor="end" class="s">start/seq/decision/sop/end</text><text x="892" y="180" text-anchor="start" class="mono c">role_owner / action</text><text x="1155" y="180" text-anchor="end" class="s">담당 / 행동</text><text x="892" y="202" text-anchor="start" class="mono c">systems / manual</text><text x="1155" y="202" text-anchor="end" class="s">jsonb</text><text x="892" y="224" text-anchor="start" class="mono c">ref_sop_no / ref_sop_name</text><text x="1155" y="224" text-anchor="end" class="s">표시용 글자</text><text x="892" y="246" text-anchor="start" class="mono c fk">ref_document_id</text><text x="1155" y="246" text-anchor="end" class="s">uuid · FK</text><text x="892" y="268" text-anchor="start" class="mono c">position / font_size</text><text x="1155" y="268" text-anchor="end" class="s">좌표</text><rect x="880" y="340" width="285" height="194" rx="8" class="bx "/><rect x="880" y="340" width="285" height="34" rx="8" class="th "/><rect x="880" y="366" width="285" height="8" class="th "/><text x="892" y="362" text-anchor="start" class="t mono">flow_edges</text><text x="1155" y="362" text-anchor="end" class="s">순서도 선</text><text x="892" y="390" text-anchor="start" class="mono c pk">id</text><text x="1155" y="390" text-anchor="end" class="s">uuid · PK</text><text x="892" y="412" text-anchor="start" class="mono c fk">version_id</text><text x="1155" y="412" text-anchor="end" class="s">uuid · FK</text><text x="892" y="434" text-anchor="start" class="mono c">instance_id</text><text x="1155" y="434" text-anchor="end" class="s">어느 순서도</text><text x="892" y="456" text-anchor="start" class="mono c">edge_key</text><text x="1155" y="456" text-anchor="end" class="s">edge_5 …</text><text x="892" y="478" text-anchor="start" class="mono c">source_key / target_key</text><text x="1155" y="478" text-anchor="end" class="s">출발 / 도착 상자</text><text x="892" y="500" text-anchor="start" class="mono c">condition</text><text x="1155" y="500" text-anchor="end" class="s">Yes / No …</text><text x="892" y="522" text-anchor="start" class="mono c">line_type / route</text><text x="1155" y="522" text-anchor="end" class="s">선 모양</text><rect x="20" y="380" width="300" height="128" rx="8" class="bx lock"/><rect x="20" y="380" width="300" height="34" rx="8" class="th lock"/><rect x="20" y="406" width="300" height="8" class="th lock"/><text x="32" y="402" text-anchor="start" class="t mono">sop_edit_locks</text><text x="310" y="402" text-anchor="end" class="s">편집 잠금</text><text x="32" y="430" text-anchor="start" class="mono c fk">document_id</text><text x="310" y="430" text-anchor="end" class="s">uuid · PK · FK</text><text x="32" y="452" text-anchor="start" class="mono c">locked_by</text><text x="310" y="452" text-anchor="end" class="s">text</text><text x="32" y="474" text-anchor="start" class="mono c">locked_at</text><text x="310" y="474" text-anchor="end" class="s">timestamptz</text><text x="32" y="496" text-anchor="start" class="mono c">expires_at</text><text x="310" y="496" text-anchor="end" class="s">timestamptz</text><polyline points="460,88 446,88 446,70 320,70" class="ln " marker-end="url(#m9d)"/><text x="390" y="150" text-anchor="middle" class="s rel lb">버전 N : 문서 1</text><text x="390" y="164" text-anchor="middle" class="s rel lb">CASCADE</text><polyline points="320,176 334,176 334,62 460,62" class="ln acc" marker-end="url(#m9acc)"/><text x="390" y="250" text-anchor="middle" class="s rel lb">현재 버전 포인터</text><text x="390" y="264" text-anchor="middle" class="s rel lb">SET NULL</text><polyline points="880,88 850,88 850,66 760,66" class="ln " marker-end="url(#m9d)"/><polyline points="880,408 850,408 850,88" class="ln " marker-end="url(#m9d)"/><text x="805" y="150" text-anchor="middle" class="s rel lb">1 : N</text><text x="805" y="164" text-anchor="middle" class="s rel lb">CASCADE</text><polyline points="170,380 170,236" class="ln " marker-end="url(#m9d)"/><text x="180" y="352" text-anchor="start" class="s rel lb">문서 1 : 잠금 0..1 · CASCADE</text><polyline points="1165,242 1172,242 1172,605 8,605 8,66 20,66" class="ln dash acc" marker-end="url(#m9acc)"/><text x="590" y="598" text-anchor="middle" class="s lb">다른 SOP 참조: flow_nodes.ref_document_id → sop_documents.id · SET NULL</text></svg><figcaption>화살표는 "FK 칸 → 그 칸이 가리키는 PK" 방향입니다. 중심은 <b>문서 1 : N 버전</b>이고, 순서도 상자·선은 버전에 매달린 검색용 사본입니다. CASCADE = 부모 행이 지워지면 같이 지워짐, SET NULL = 부모가 지워지면 이 칸만 비워짐.</figcaption></figure>
+<div class="tbl"><table>
+<tr><th>표</th><th>한 행의 의미</th><th>언제 생기나</th></tr>
+<tr><td><code>sop_documents</code></td><td>SOP 문서 1건 (번호, 이름, 상태, 현재 버전 포인터)</td><td>새 문서 첫 저장(POST)</td></tr>
+<tr><td><code>sop_versions</code></td><td>저장 1번 (편집기 JSON 통째)</td><td>저장할 때마다 (POST, PUT)</td></tr>
+<tr><td><code>flow_nodes</code></td><td>그 버전 순서도의 상자 1개</td><td>저장 때 서버가 JSON 에서 뽑아냄</td></tr>
+<tr><td><code>flow_edges</code></td><td>그 버전 순서도의 선 1개</td><td>〃</td></tr>
+<tr><td><code>sop_edit_locks</code></td><td>지금 누가 편집 중인지 (문서당 최대 1행)</td><td>문서를 열 때 / 하트비트</td></tr>
+</table></div>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 문서와 버전을 나눴나</b> — "번호·이름·상태" 처럼 문서 전체에 하나뿐인 정보와, "그때 저장한 내용" 처럼 저장마다 다른 정보를 섞으면 이력이 남지 않거나 같은 값이 버전마다 중복됩니다. 1 : N 으로 나누면 옛 버전을 그대로 보존하면서 문서의 현재 상태는 한 줄로 관리됩니다.</p>
+<p><b>왜 current_version_id 포인터</b> — "최신 버전" 을 매번 <code>MAX(version_no)</code> 로 찾을 수도 있지만, 포인터를 두면 목록·열기가 한 번에 조인됩니다. 또 저장의 맨 마지막에 포인터를 옮기므로(19장 g), 반쯤 저장된 버전이 "최신" 으로 보이는 순간이 없습니다. 문서↔버전이 서로를 가리키는 순환이라 FK 는 표를 다 만든 뒤 <code>ALTER TABLE</code> 로 붙입니다.</p>
+<p><b>왜 PK 가 UUID</b> — 1, 2, 3 같은 일련번호는 다른 문서의 id 를 추측하기 쉽고, DB 를 합치거나 옮길 때 겹칩니다. UUID 는 어디서 만들어도 겹치지 않습니다.</p>
+<p><b>왜 CASCADE 와 SET NULL 을 구분했나</b> — 버전·상자·선·잠금은 부모 없이는 의미가 없으니 부모가 지워지면 같이 지웁니다(CASCADE). 반면 "다른 SOP 참조" 와 "현재 버전 포인터" 는 대상이 사라져도 내 행은 남아야 하니 그 칸만 비웁니다(SET NULL).</p>
+<p><b>왜 CHECK 제약</b> — status 는 draft/review/approved/retired 중 하나, area 는 P/E/D/T/C/'' 중 하나여야 합니다. 앱 코드 검사를 빠뜨려도 DB 가 마지막으로 막습니다.</p>
+<p><b>왜 timestamptz</b> — 시간대 정보가 있는 시각 타입이라, 세션 시간대가 무엇이든 같은 순간을 같은 값으로 저장합니다.</p>
+<p><b>왜 잠금이 별도 표</b> — 잠금은 30초마다 갱신되는 휘발성 정보입니다. sop_documents 에 넣으면 문서 행이 계속 수정되어 updated_at 이 의미를 잃고, 저장과 잠금이 같은 행을 두고 다툽니다.</p>
+<p><b>인덱스는 왜</b> — 사이드바(AREA → 번호 정렬), 버전 이력(문서별 최신순), "이 문서를 참조하는 SOP"(ref_document_id), "MES 를 쓰는 SOP"(systems GIN), 이름·Action 부분 검색(pg_trgm) 처럼 <b>실제로 하는 조회마다</b> 하나씩 있습니다.</p>
+</div>
+
+<h2 id="c18"><span class="part">4부 · 데이터</span>18. JSON 통째 + 필요한 칸만 사본</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 300" role="img" aria-label="편집기 JSON 하나가 통째 보관과 세 갈래 사본으로 나뉘어 저장되는 모습"><defs><marker id="m10d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m10acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m10warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m10ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="70" width="280" height="160" rx="8" class="bx acc"/><text x="160.0" y="114" text-anchor="middle" class="t">편집기 JSON (doc)</text><text x="160.0" y="132" text-anchor="middle" class="s mono">sop: { id, name }</text><text x="160.0" y="148" text-anchor="middle" class="s mono">studio: { area, revision, tags }</text><text x="160.0" y="164" text-anchor="middle" class="s mono">blocks: [ 표지, 적용범위,</text><text x="160.0" y="180" text-anchor="middle" class="s mono">  순서도{ project{nodes,edges,frame} },</text><text x="160.0" y="196" text-anchor="middle" class="s mono">  본문, 액티비티 … ]</text><rect x="560" y="20" width="420" height="60" rx="8" class="bx acc"/><text x="770.0" y="46" text-anchor="middle" class="t">sop_versions.content (jsonb)</text><text x="770.0" y="64" text-anchor="middle" class="s">통째 보관 → 다시 열 때 화면을 그대로 복원</text><rect x="560" y="120" width="420" height="60" rx="8" class="bx "/><text x="770.0" y="146" text-anchor="middle" class="t">sop_documents.name / area · sop_versions.tags …</text><text x="770.0" y="164" text-anchor="middle" class="s">목록·트리·필터용 몇 칸만 복사</text><rect x="560" y="220" width="420" height="60" rx="8" class="bx "/><text x="770.0" y="246" text-anchor="middle" class="t">flow_nodes / flow_edges</text><text x="770.0" y="264" text-anchor="middle" class="s">검색용: "MES 쓰는 SOP", "이 SOP 를 참조하는 문서"</text><polyline points="300,110 430,50 560,50" class="ln acc" marker-end="url(#m10acc)"/><text x="450" y="40" text-anchor="middle" class="s lb">Jsonb(doc)</text><polyline points="300,150 560,150" class="ln " marker-end="url(#m10d)"/><text x="430" y="142" text-anchor="middle" class="s lb">document_meta()</text><polyline points="300,190 430,250 560,250" class="ln " marker-end="url(#m10d)"/><text x="445" y="270" text-anchor="middle" class="s lb">derive_flow_rows()</text></svg><figcaption>원본은 한 번 통째로 저장하고, 서버가 쓸 일이 있는 값만 골라 따로 칸/표로 복사합니다. FAB 체크·레인 폭 같은 화면 정보는 원본 JSON 에만 있으면 충분하므로 DB 컬럼을 늘리지 않습니다.</figcaption></figure>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 JSON 을 통째로 저장하나</b> — 편집기 화면에는 표지 FAB 체크, 레인 폭, 본문 표 칸 크기, 글꼴 크기 같은 정보가 아주 많고 계속 늘어납니다. 이걸 전부 DB 컬럼으로 만들면 템플릿 하나 바꿀 때마다 DB 를 고쳐야 합니다. 통째로 두면 <b>편집기가 바뀌어도 DB 는 그대로</b>입니다. 순서도 프레임(START/STEP/END, FAB 체크)을 추가할 때 DB 를 손대지 않은 이유입니다.</p>
+<p><b>왜 그래도 사본을 따로 두나</b> — JSON 안을 뒤지는 검색은 느리고 SQL 이 복잡합니다. "이 SOP 를 참조하는 문서", "MES 를 쓰는 SOP", "Action 에 '검사' 가 들어간 단계" 같은 질문은 표로 풀어 두면 인덱스로 바로 찾습니다.</p>
+<p><b>원본과 사본이 어긋나지 않나</b> — 사본은 저장할 때 서버가 원본에서 뽑아 같은 트랜잭션 안에서 함께 씁니다. 사람이 사본만 따로 고칠 길이 없으므로 항상 같은 버전의 같은 내용입니다. 이상한 상자는 사본에서만 건너뛰고(경고), 원본은 그대로 보관되므로 화면 복원에는 영향이 없습니다.</p>
+</div>
+
+<h2 id="c19"><span class="part">4부 · 데이터</span>19. 저장의 속: _append_version</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 440" role="img" aria-label="저장 요청 안에서 트랜잭션 전후로 일어나는 검사와 쓰기 순서, 충돌 시 롤백 갈래"><defs><marker id="m11d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m11acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m11warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m11ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="590" y="10" width="205" height="56" rx="8" class="bx warn"/><text x="692.5" y="34" text-anchor="middle" class="t">ROLLBACK → 409</text><text x="692.5" y="52" text-anchor="middle" class="s">지금까지 한 일 전부 취소</text><rect x="10" y="130" width="175" height="130" rx="8" class="bx "/><text x="97.5" y="167" text-anchor="middle" class="t">트랜잭션 전</text><text x="97.5" y="185" text-anchor="middle" class="s">validate_document → 422</text><text x="97.5" y="201" text-anchor="middle" class="s">문서 있나 → 404</text><text x="97.5" y="217" text-anchor="middle" class="s">번호 같나 → 400</text><text x="97.5" y="233" text-anchor="middle" class="s">(잠금 없이 빠른 실패)</text><rect x="205" y="90" width="785" height="260" rx="12" class="zone acc"/><text x="217" y="110" text-anchor="start" class="zt">async with conn.transaction():   ← 이 안에서 오류가 나면 전부 취소</text><rect x="225" y="130" width="175" height="64" rx="8" class="bx "/><text x="312.5" y="158" text-anchor="middle" class="t">a. 문서 행 잠금</text><text x="312.5" y="176" text-anchor="middle" class="s">SELECT … FOR UPDATE</text><rect x="415" y="130" width="175" height="64" rx="8" class="bx "/><text x="502.5" y="158" text-anchor="middle" class="t">b. 최신 버전 번호</text><text x="502.5" y="176" text-anchor="middle" class="s">MAX(version_no)</text><rect x="605" y="130" width="175" height="64" rx="8" class="bx "/><text x="692.5" y="158" text-anchor="middle" class="t">c. 충돌 검사</text><text x="692.5" y="176" text-anchor="middle" class="s">base_version_no = 최신?</text><rect x="795" y="130" width="175" height="64" rx="8" class="bx "/><text x="882.5" y="158" text-anchor="middle" class="t">d. 참조 정리</text><text x="882.5" y="176" text-anchor="middle" class="s">refs.resolve_references</text><rect x="225" y="255" width="175" height="64" rx="8" class="bx "/><text x="312.5" y="283" text-anchor="middle" class="t">e. 순서도 행 뽑기</text><text x="312.5" y="301" text-anchor="middle" class="s">derive_flow_rows</text><rect x="415" y="255" width="175" height="64" rx="8" class="bx "/><text x="502.5" y="283" text-anchor="middle" class="t">f. INSERT</text><text x="502.5" y="301" text-anchor="middle" class="s">versions 1 + nodes N + edges N</text><rect x="605" y="255" width="175" height="64" rx="8" class="bx "/><text x="692.5" y="283" text-anchor="middle" class="t">g. 포인터 이동</text><text x="692.5" y="301" text-anchor="middle" class="s">current_version_id = 새 버전</text><rect x="795" y="255" width="175" height="64" rx="8" class="bx ok"/><text x="882.5" y="283" text-anchor="middle" class="t">COMMIT</text><text x="882.5" y="301" text-anchor="middle" class="s">한꺼번에 확정</text><polyline points="400,162 415,162" class="ln " marker-end="url(#m11d)"/><polyline points="590,162 605,162" class="ln " marker-end="url(#m11d)"/><polyline points="780,162 795,162" class="ln " marker-end="url(#m11d)"/><polyline points="882,194 882,222 312,222 312,255" class="ln " marker-end="url(#m11d)"/><polyline points="400,287 415,287" class="ln " marker-end="url(#m11d)"/><polyline points="590,287 605,287" class="ln " marker-end="url(#m11d)"/><polyline points="780,287 795,287" class="ln " marker-end="url(#m11d)"/><polyline points="185,162 225,162" class="ln " marker-end="url(#m11d)"/><polyline points="692,130 692,66" class="ln warn" marker-end="url(#m11warn)"/><text x="700" y="104" text-anchor="start" class="s warn lb">다르면</text><rect x="640" y="375" width="340" height="56" rx="8" class="bx "/><text x="810.0" y="399" text-anchor="middle" class="t">트랜잭션 뒤 → 201</text><text x="810.0" y="417" text-anchor="middle" class="s">남의 잠금 있으면 warning 문구만 붙임</text><polyline points="882,319 882,375" class="ln " marker-end="url(#m11d)"/></svg><figcaption>저장은 "기존 버전 수정" 이 아니라 "새 버전 한 줄 추가" 입니다. 문서 행을 먼저 잠가 동시 저장을 한 줄로 세우고(a), 그 사이 남이 저장했으면 409 로 전부 취소합니다(c). 사본 행까지 모두 쓴 뒤에야 포인터를 옮기고(g) 한꺼번에 확정하므로, 반쯤 저장된 버전이 보이는 일이 없습니다.</figcaption></figure>
+<p>📍 <code>app/sop/sops.py:187</code></p>
+<ol>
+<li><b>a. 문서 행 잠금</b> — <code>SELECT … FROM sop_documents WHERE id=%s FOR UPDATE</code>. 같은 문서를 동시에 저장하려는 다른 요청은 여기서 줄을 섭니다.</li>
+<li><b>b. 최신 버전 번호</b> — <code>COALESCE(MAX(version_no), 0)</code>. 버전이 없으면 0.</li>
+<li><b>c. 충돌 검사</b> — 내가 열었던 버전(<code>base_version_no</code>)과 다르면 409 → 지금까지 한 일 전부 취소.</li>
+<li><b>d. 참조 정리</b> — 순서도의 "다른 SOP" 상자를 실제 문서와 맞춥니다(21장).</li>
+<li><b>e. 순서도 행 뽑기</b> — <code>derive_flow_rows</code>.</li>
+<li><b>f. INSERT</b> — 버전 1행(content = 정리된 JSON) + 상자 N행 + 선 N행 (<code>executemany</code> 로 한 번에).</li>
+<li><b>g. 포인터 이동</b> — <code>current_version_id</code> = 새 버전, 이름·AREA 갱신. 폐기 문서였으면 draft 로 되살리고 경고.</li>
+<li><b>COMMIT</b> — <code>async with</code> 블록이 정상으로 끝나면 전부 확정.</li>
+</ol>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 수정이 아니라 항상 추가</b> — SOP 는 "언제 누가 무엇을 바꿨나" 가 중요한 문서입니다. UPDATE 로 덮어쓰면 이전 내용이 사라집니다. 항상 새 행을 추가하면 이력이 자동으로 남고, 옛 버전 열기·두 버전 비교가 공짜로 됩니다. 저장 공간은 더 들지만 텍스트 위주라 감당할 만합니다.</p>
+<p><b>왜 트랜잭션</b> — 버전 행은 들어갔는데 상자 INSERT 에서 실패하면, 순서도 없는 반쪽 버전이 남습니다. 묶어 두면 전부 되거나 전부 안 됩니다.</p>
+<p><b>왜 FOR UPDATE 로 문서 행을</b> — 두 요청이 동시에 b 단계를 실행하면 둘 다 "최신은 3" 이라 보고 둘 다 v4 를 만들려 합니다(UNIQUE 위반 500). 문서 행을 잠그면 두 번째 요청은 첫 번째가 끝날 때까지 기다렸다가 "최신은 4" 를 봅니다. PostgreSQL 은 <code>MAX</code> 같은 집계와 FOR UPDATE 를 한 문장에 쓸 수 없어서, 문서 행을 먼저 잠그고 MAX 는 따로 구합니다.</p>
+<p><b>왜 포인터 이동이 맨 마지막</b> — 다른 사람이 같은 순간 문서를 열면 포인터가 가리키는 버전을 읽습니다. 모든 행을 다 쓴 뒤에 포인터를 옮겨야 "완성된 버전" 만 보입니다(트랜잭션 덕분에 커밋 전에는 어차피 안 보이지만, 순서 자체도 안전하게).</p>
+<p><b>왜 폐기 문서에 저장하면 되살리나</b> — 그대로 두면 저장은 성공(201)인데 사이드바에서는 안 보이는 "유령 문서" 가 됩니다.</p>
+<p><b>왜 남의 잠금이 있어도 저장은 막지 않나</b> — 잠금은 안내용 표지판이고, 진짜 데이터 보호는 c 의 버전 검사가 합니다. 잠금으로 저장까지 막으면 잠금이 꼬였을 때(만료 직전 등) 작업을 아예 저장하지 못하는 일이 생깁니다. 대신 <code>warning</code> 으로 알려 줍니다.</p>
+</div>
+<p><b>새 문서(POST)</b> 는 이 앞에 <code>INSERT INTO sop_documents</code> 한 줄이 같은 트랜잭션에 붙고, 충돌 검사(c)는 건너뜁니다. 같은 번호가 이미 있으면 409 <code>sop_no_taken</code> 과 함께 그 문서 id 를 돌려주고, 화면은 "그 문서의 새 버전으로 저장할까요?" 를 묻습니다. 검사와 INSERT 사이에 다른 요청이 같은 번호를 먼저 만드는 드문 경우는 DB 의 UNIQUE 제약이 막고(<code>UniqueViolation</code>), 같은 409 로 바꿔 돌려줍니다.</p>
+
+<h2 id="c20"><span class="part">4부 · 데이터</span>20. 동시 저장 충돌: 409 version_conflict</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 420" role="img" aria-label="두 사람이 같은 v3 를 열고 저장할 때 늦게 저장한 쪽이 409 를 받는 과정"><defs><marker id="m12d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m12acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m12warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m12ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="40" y="14" width="200" height="50" rx="8" class="bx "/><text x="140.0" y="35" text-anchor="middle" class="t">사용자 A</text><text x="140.0" y="53" text-anchor="middle" class="s">브라우저</text><polyline points="140,64 140,410" class="ln dash faint"/><rect x="400" y="14" width="200" height="50" rx="8" class="bx acc"/><text x="500.0" y="35" text-anchor="middle" class="t">서버 + DB</text><text x="500.0" y="53" text-anchor="middle" class="s">최신 버전 번호</text><polyline points="500,64 500,410" class="ln dash faint"/><rect x="760" y="14" width="200" height="50" rx="8" class="bx "/><text x="860.0" y="35" text-anchor="middle" class="t">사용자 B</text><text x="860.0" y="53" text-anchor="middle" class="s">브라우저</text><polyline points="860,64 860,410" class="ln dash faint"/><polyline points="140,100 494,100" class="ln " marker-end="url(#m12d)"/><text x="320" y="93" text-anchor="middle" class="s lb">GET 열기</text><polyline points="500,125 146,125" class="ln dash" marker-end="url(#m12d)"/><text x="320" y="118" text-anchor="middle" class="s lb">v3 받음 (base=3 기억)</text><polyline points="860,160 506,160" class="ln " marker-end="url(#m12d)"/><text x="680" y="153" text-anchor="middle" class="s lb">GET 열기</text><polyline points="500,185 854,185" class="ln dash" marker-end="url(#m12d)"/><text x="680" y="178" text-anchor="middle" class="s lb">v3 받음 (base=3 기억)</text><polyline points="140,230 494,230" class="ln acc" marker-end="url(#m12acc)"/><text x="320" y="223" text-anchor="middle" class="s lb">PUT base_version_no=3</text><text x="510" y="258" text-anchor="start" class="s ok lb">최신 3 = base 3 ✓ → v4 저장</text><polyline points="500,285 146,285" class="ln dash" marker-end="url(#m12d)"/><text x="320" y="278" text-anchor="middle" class="s lb">201 v4</text><polyline points="860,330 506,330" class="ln warn" marker-end="url(#m12warn)"/><text x="680" y="323" text-anchor="middle" class="s lb">PUT base_version_no=3</text><text x="490" y="358" text-anchor="end" class="s warn lb">최신 4 ≠ base 3 ✗ → ROLLBACK</text><polyline points="500,385 854,385" class="ln warn dash" marker-end="url(#m12warn)"/><text x="680" y="378" text-anchor="middle" class="s lb">409 version_conflict (current_version_no=4)</text></svg><figcaption><b>낙관적 동시성 제어</b>: 평소에는 막지 않고, 저장하는 순간에 "내가 본 버전이 아직 최신인가" 만 확인합니다. B 의 화면은 "다른 사람이 v4 를 먼저 저장했습니다. 다시 불러올까요?" 를 띄웁니다. 덮어쓰기로 A 의 작업이 조용히 사라지는 일을 막는 장치입니다.</figcaption></figure>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 "낙관적" 방식인가</b> — 동시 편집을 막는 방법은 둘입니다. ① 비관적: 편집하는 동안 다른 사람이 아예 못 고치게 잠금. ② 낙관적: 일단 다 고치게 두고, 저장 순간에 "내가 본 게 최신인가" 만 확인. 사내 SOP 는 같은 문서를 정말 동시에 고치는 일이 드물어서 ②가 맞습니다. 그래도 "누가 편집 중" 을 미리 알리려고 표지판 역할의 잠금(23장)을 같이 둡니다.</p>
+<p><b>왜 덮어쓰지 않고 409 인가</b> — 나중 사람이 그냥 v5 로 저장하면, A 가 v4 에서 고친 내용이 B 의 화면에는 없었으므로 <b>조용히 사라집니다</b>. 409 는 "합치는 건 사람이 판단하세요" 라는 신호입니다.</p>
+<p><b>base_version_no 를 null 로 보내면</b> — 검사를 건너뜁니다(강제 저장). 화면에서 "이미 있는 번호입니다. 그 문서의 새 버전으로 저장할까요?" 에 예를 누른 경우에만 씁니다.</p>
+</div>
+
+<h2 id="c21"><span class="part">4부 · 데이터</span>21. id 와 번호, 그리고 SOP 간 참조</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 260" role="img" aria-label="문서 id 는 고정이고 sop_no 는 바뀔 수 있어, id 로 연결된 참조만 번호 변경을 따라가는 모습"><defs><marker id="m13d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m13acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m13warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m13ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="60" width="330" height="120" rx="8" class="bx acc"/><text x="185.0" y="92" text-anchor="middle" class="t">문서 A (sop_documents)</text><text x="185.0" y="110" text-anchor="middle" class="s mono">id = 3f2a… (절대 안 바뀜)</text><text x="185.0" y="126" text-anchor="middle" class="s mono">sop_no = SOP-ETCH-001</text><text x="185.0" y="142" text-anchor="middle" class="s">   → PATCH /number →</text><text x="185.0" y="158" text-anchor="middle" class="s mono">sop_no = SOP-ETCH-010</text><rect x="640" y="20" width="340" height="80" rx="8" class="bx "/><text x="810.0" y="48" text-anchor="middle" class="t">문서 B 순서도의 SOP 상자 ①</text><text x="810.0" y="66" text-anchor="middle" class="s mono">ref_document_id = 3f2a…</text><text x="810.0" y="82" text-anchor="middle" class="s">id 로 연결됨 (linked)</text><rect x="640" y="150" width="340" height="80" rx="8" class="bx dash"/><text x="810.0" y="178" text-anchor="middle" class="t">문서 C 순서도의 SOP 상자 ②</text><text x="810.0" y="196" text-anchor="middle" class="s mono">sop_id = 'SOP-ETCH-001' (글자만)</text><text x="810.0" y="212" text-anchor="middle" class="s">번호로만 가리킴 (미작성/pending)</text><polyline points="640,60 350,100" class="ln acc" marker-end="url(#m13acc)"/><text x="495" y="66" text-anchor="middle" class="s lb">번호가 바뀌어도 그대로 이어짐</text><polyline points="640,190 350,150" class="ln warn dash" marker-end="url(#m13warn)"/><text x="495" y="196" text-anchor="middle" class="s lb">옛 번호라 끊김 → 다음 저장 때 다시 찾음</text></svg><figcaption>사람이 보는 번호(sop_no)는 오타 수정·체계 변경으로 바뀔 수 있으므로, 저장 주소와 참조의 "진짜 연결" 은 바뀌지 않는 UUID(id)로 합니다. 상자의 번호·이름 글자는 저장할 때마다 서버가 최신 값으로 다시 써 주는 표시용 사본입니다.</figcaption></figure>
+<p>저장 주소는 <code>/api/sops/{id}</code>(UUID)입니다. 번호를 바꾸려면 별도의 <code>PATCH /api/sops/{id}/number</code> 를 씁니다. 이 API 는 버전을 건드리지 않고 <code>sop_documents.sop_no</code> 만 바꿉니다.</p>
+<p>순서도의 "다른 SOP" 상자는 저장할 때마다 📍 <code>app/sop/refs.py</code> 가 아래 규칙으로 정리합니다.</p>
+<div class="tbl"><table>
+<tr><th>상자 상태</th><th>서버가 하는 일</th><th>결과</th></tr>
+<tr><td>ref_document_id 있고 그 문서가 존재</td><td>번호·이름 글자를 그 문서의 지금 값으로 덮어씀. 폐기 문서면 경고</td><td>linked</td></tr>
+<tr><td>ref_document_id 있는데 문서가 없음</td><td>연결을 풀고(null) 글자는 그대로. 경고</td><td>pending / empty</td></tr>
+<tr><td>id 없이 번호만</td><td>그 번호의 문서를 찾아 있으면 id 를 채움(승격)</td><td>linked 또는 pending</td></tr>
+<tr><td>둘 다 없음</td><td>저장은 하고 "비어 있는 상자 N개" 경고</td><td>empty</td></tr>
+</table></div>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 번호가 아니라 id 로 저장하나</b> — 번호로 저장하면, 번호를 바꾼 문서를 저장할 때 "새 문서인지, 번호만 바꾼 기존 문서인지" 를 서버가 구분할 수 없습니다. 절대 안 바뀌는 id 로 저장하고 번호 변경은 다른 문으로 받으면 모호함이 없습니다.</p>
+<p><b>왜 상자에 번호·이름 글자를 또 저장하나</b> — 화면에 표시하려면 글자가 필요하고, 아직 존재하지 않는 SOP(앞으로 쓸 예정)도 번호로 적어 둘 수 있어야 하기 때문입니다. 글자는 "표시용 사본" 이고 진짜 연결은 id 입니다.</p>
+<p><b>왜 저장 때마다 덮어쓰나</b> — 참조 대상의 이름이 바뀌어도 내 문서를 다음에 열면 최신 이름이 보이게 하려는 것입니다.</p>
+<p><b>왜 조회를 상자마다 하지 않나</b> — 상자가 50개면 쿼리 50번이 됩니다. id 목록 한 번, 번호 목록 한 번(<code>WHERE … IN (…)</code>)으로 최대 2번만 조회합니다.</p>
+<p><b>왜 열 때 번호를 보정하나</b> — PATCH /number 는 버전 안의 JSON 을 건드리지 않으므로, 옛 JSON 의 <code>sop.id</code> 는 옛 번호입니다. 열기 응답을 만들 때만 지금 번호로 맞춰 내려주어(DB 는 그대로) 편집기가 옛 번호를 입력칸에 채우지 않게 합니다(📍 <code>common.py</code> <code>content_with_current_sop_no</code>).</p>
+</div>
+
+<h2 id="c22"><span class="part">4부 · 데이터</span>22. 폐기와 버전 열람</h2>
+<p><code>DELETE /api/sops/{id}</code> 는 행을 지우지 않고 <code>status='retired'</code> 로 바꿉니다. 응답의 <code>referenced_by</code> 는 이 문서를 참조하는 다른 문서 수입니다.</p>
+<p>버전 쪽 API 는 읽기 전용입니다 (📍 <code>app/sop/versions.py</code>): 목록 <code>GET …/versions</code>, 옛 버전 열기 <code>GET …/versions/{n}</code>, 두 버전의 순서도 비교 <code>GET …/versions/{a}/diff/{b}</code>(flow_nodes 를 node_key 로 맞춰 추가/삭제/변경을 계산).</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 진짜로 지우지 않나</b> — SOP 는 이력 보존이 원칙이고, 다른 문서가 참조하고 있을 수 있습니다. 지우면 그 참조가 SET NULL 로 끊깁니다. 폐기는 "목록에서 숨김" 일 뿐이라 실수로 지워도 다시 저장하면 되살아납니다.</p>
+<p><b>왜 비교를 flow_nodes 로</b> — 순서도의 상자 단위 비교는 JSON 전체 비교보다 의미가 분명합니다("seq_3 의 담당이 바뀜"). 사본 표가 여기서도 쓰입니다.</p>
+</div>
+
+<h2 id="c23"><span class="part">4부 · 데이터</span>23. 편집 잠금</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 330" role="img" aria-label="편집 잠금이 30초 하트비트로 연장되고, 다른 사용자는 423 을 받고, 해제나 만료 후에 넘어가는 시간 흐름"><defs><marker id="m14d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m14acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m14warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m14ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><polyline points="120,290 970,290" class="ln "/><polyline points="120,285 120,295" class="ln "/><text x="120" y="312" text-anchor="middle" class="s">0s</text><polyline points="226,285 226,295" class="ln "/><text x="226" y="312" text-anchor="middle" class="s">30s</text><polyline points="332,285 332,295" class="ln "/><text x="332" y="312" text-anchor="middle" class="s">60s</text><polyline points="439,285 439,295" class="ln "/><text x="439" y="312" text-anchor="middle" class="s">90s</text><polyline points="545,285 545,295" class="ln "/><text x="545" y="312" text-anchor="middle" class="s">120s</text><polyline points="651,285 651,295" class="ln "/><text x="651" y="312" text-anchor="middle" class="s">150s</text><polyline points="758,285 758,295" class="ln "/><text x="758" y="312" text-anchor="middle" class="s">180s</text><polyline points="864,285 864,295" class="ln "/><text x="864" y="312" text-anchor="middle" class="s">210s</text><polyline points="970,285 970,295" class="ln "/><text x="970" y="312" text-anchor="middle" class="s">240s</text><text x="20" y="95" text-anchor="start" class="t">사용자 A</text><text x="20" y="215" text-anchor="start" class="t">사용자 B</text><rect x="120" y="70" width="531" height="36" rx="6" class="bx acc"/><text x="385.5" y="93" text-anchor="middle" class="s">A 가 잠금 보유 (expires_at 이 계속 뒤로 밀림)</text><polyline points="226,130 226,108" class="ln acc" marker-end="url(#m14acc)"/><text x="226" y="146" text-anchor="middle" class="s">♥ POST</text><polyline points="332,130 332,108" class="ln acc" marker-end="url(#m14acc)"/><text x="332" y="146" text-anchor="middle" class="s">♥ POST</text><polyline points="439,130 439,108" class="ln acc" marker-end="url(#m14acc)"/><text x="439" y="146" text-anchor="middle" class="s">♥ POST</text><polyline points="545,130 545,108" class="ln acc" marker-end="url(#m14acc)"/><text x="545" y="146" text-anchor="middle" class="s">♥ POST</text><text x="120" y="60" text-anchor="start" class="s">열기: POST /lock (ttl 120s)</text><text x="651" y="60" text-anchor="middle" class="s">닫기: DELETE /lock</text><polyline points="279,230 279,200" class="ln warn" marker-end="url(#m14warn)"/><text x="285" y="250" text-anchor="start" class="s warn">POST → 423 locked</text><text x="285" y="266" text-anchor="start" class="s">"A 님이 편집 중" · 30초 뒤 재시도</text><polyline points="704,230 704,200" class="ln ok" marker-end="url(#m14ok)"/><rect x="704" y="182" width="266" height="36" rx="6" class="bx ok"/><text x="837.0" y="205" text-anchor="middle" class="s">B 가 잠금 획득</text></svg><figcaption>잠금은 <b>시간이 지나면 저절로 풀리는 표지판</b>입니다. 편집 중인 브라우저가 30초마다 연장(하트비트)하고, 닫으면 DELETE 로 풉니다. 브라우저가 갑자기 꺼져도 120초 뒤 만료되므로 "영원히 잠긴 문서" 가 생기지 않습니다.</figcaption></figure>
+<pre>
+POST /api/sops/{id}/lock  {user, ttl_sec: 120}        📍 app/sop/locks.py:33
+  ├ 문서 행 FOR UPDATE   (첫 잠금 동시 요청도 줄 세움)
+  ├ 잠금 행 FOR UPDATE 로 읽기
+  ├ 남의 잠금이 아직 유효 → 423 locked {locked_by, expires_at}
+  └ 없음 → INSERT / 내 것 또는 만료됨 → UPDATE (expires_at = now() + 120초)
+DELETE /api/sops/{id}/lock  → 내가 잡은 것만 삭제. 남의 것/없음이어도 200 (멱등)
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 만료 시각(TTL)이 있나</b> — 브라우저는 예고 없이 사라집니다(탭 닫기, 노트북 절전, 네트워크 끊김). 해제 요청만 믿으면 영원히 잠긴 문서가 생깁니다. 시간이 지나면 저절로 풀리게 하고, 살아 있는 동안은 30초마다 연장합니다. 120초 = 하트비트 4번을 놓쳐야 만료.</p>
+<p><b>왜 문서 행부터 잠그나</b> — 잠금 행이 아직 없는 문서에 두 사람이 동시에 첫 잠금을 요청하면, "없는 행" 은 FOR UPDATE 로 잠글 수 없어서 둘 다 INSERT 로 갔다가 늦은 쪽이 중복 오류(500)를 냅니다. 항상 존재하는 문서 행에서 먼저 줄을 세웁니다.</p>
+<p><b>왜 해제가 항상 200</b> — 페이지를 떠날 때 보내는 요청(<code>keepalive</code> fetch)은 응답을 확인할 수 없습니다. 이미 풀렸든 남의 것이든 오류 없이 같은 결과(멱등)여야 여러 번 보내도 안전합니다.</p>
+<p><b>왜 DELETE 에 바디·쿼리·헤더 세 가지를 받나</b> — DELETE 에 바디를 못 싣는 도구가 있어서입니다. 다만 이것이 <a href="#c32">알려진 문제</a>(바디 이름 우선)와 이어집니다.</p>
+</div>
+
+<!-- ============================================================ 5부 -->
+<h2 id="c24"><span class="part">5부 · 화면</span>24. 프론트 구조</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 380" role="img" aria-label="sopstudio 페이지 안의 블록들, iframe 순서도와의 함수 호출, api 함수를 통한 서버 통신, localStorage"><defs><marker id="m15d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m15acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m15warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m15ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="10" y="20" width="640" height="345" rx="12" class="zone "/><text x="22" y="40" text-anchor="start" class="zt">sopstudio.html (한 페이지)</text><rect x="30" y="55" width="150" height="290" rx="8" class="bx "/><text x="105.0" y="164" text-anchor="middle" class="t">라이브러리 트리</text><text x="105.0" y="182" text-anchor="middle" class="s">GET /api/sops</text><text x="105.0" y="198" text-anchor="middle" class="s">문서 목록</text><text x="105.0" y="214" text-anchor="middle" class="s"></text><text x="105.0" y="230" text-anchor="middle" class="s">클릭 → 열기</text><text x="105.0" y="246" text-anchor="middle" class="s">GET /api/sops/{id}</text><rect x="200" y="50" width="430" height="300" rx="12" class="zone "/><text x="212" y="70" text-anchor="start" class="zt">캔버스: 블록(템플릿) 목록</text><rect x="220" y="80" width="180" height="40" rx="8" class="bx "/><text x="310.0" y="104" text-anchor="middle" class="t">표지 (title)</text><rect x="220" y="128" width="180" height="40" rx="8" class="bx "/><text x="310.0" y="152" text-anchor="middle" class="t">적용범위 (scope)</text><rect x="220" y="176" width="180" height="40" rx="8" class="bx "/><text x="310.0" y="200" text-anchor="middle" class="t">순서도 (flowchart)</text><rect x="220" y="296" width="180" height="40" rx="8" class="bx "/><text x="310.0" y="320" text-anchor="middle" class="t">본문 · 액티비티 정의서 …</text><rect x="220" y="226" width="180" height="58" rx="8" class="bx acc"/><text x="310.0" y="251" text-anchor="middle" class="t">iframe</text><text x="310.0" y="269" text-anchor="middle" class="s">flowchart.html?id=…</text><polyline points="310,216 310,226" class="ln " marker-end="url(#m15d)"/><rect x="430" y="90" width="180" height="120" rx="8" class="bx "/><text x="520.0" y="130" text-anchor="middle" class="t">저장 JSON 만들기</text><text x="520.0" y="148" text-anchor="middle" class="s">collectDocumentState</text><text x="520.0" y="164" text-anchor="middle" class="s">블록 → blocks[]</text><text x="520.0" y="180" text-anchor="middle" class="s">순서도 → project</text><polyline points="400,255 520,255 520,210" class="ln " marker-end="url(#m15d)"/><text x="490" y="274" text-anchor="middle" class="s mono lb">__flowExportProject()</text><rect x="700" y="60" width="280" height="86" rx="8" class="bx acc"/><text x="840.0" y="91" text-anchor="middle" class="t">api(method, path, body)</text><text x="840.0" y="109" text-anchor="middle" class="s">모든 서버 요청이 지나는 한 곳</text><text x="840.0" y="125" text-anchor="middle" class="s">X-User 헤더 · 오류 → Error</text><polyline points="610,130 700,110" class="ln " marker-end="url(#m15d)"/><text x="655" y="108" text-anchor="middle" class="s lb">PUT/POST</text><rect x="700" y="196" width="280" height="64" rx="8" class="bx "/><text x="840.0" y="224" text-anchor="middle" class="t">서버 (FastAPI)</text><text x="840.0" y="242" text-anchor="middle" class="s">/api/sops …</text><polyline points="840,146 840,196" class="ln " marker-end="url(#m15d)"/><text x="846" y="176" text-anchor="start" class="s lb">fetch</text><rect x="700" y="290" width="280" height="64" rx="8" class="bx dash"/><text x="840.0" y="318" text-anchor="middle" class="t">localStorage (이 브라우저만)</text><text x="840.0" y="336" text-anchor="middle" class="s">임시 문서 · 사용자 이름</text><polyline points="610,180 660,180 660,322 700,322" class="ln dash" marker-end="url(#m15d)"/><text x="664" y="300" text-anchor="start" class="s lb">이 기기에 저장</text></svg><figcaption>편집기는 블록(템플릿)들의 목록이고, 순서도 블록만 별도 HTML(iframe)입니다. 부모 페이지는 iframe 안의 함수를 직접 불러 순서도 데이터를 꺼내고 넣습니다. 서버로 가는 요청은 전부 <code>api()</code> 하나를 지나갑니다.</figcaption></figure>
+<ul>
+<li><b>시작</b>: 홈 화면에 문서 목록. 새 문서는 표지 → 적용범위 → 순서도로 시작(📍 <code>sopstudio.html:3739</code> <code>seedDefaultDocument</code>).</li>
+<li><b>사용자 이름</b>: 처음 한 번 prompt 로 묻고 localStorage <code>sop-studio-user</code> 에 저장(📍 <code>:3759</code>).</li>
+<li><b>순서도</b>: 블록마다 <code>&lt;iframe src="/static/sop/flowchart.html?id=…"&gt;</code>(📍 <code>:2425</code>). 부모는 <code>frame.contentWindow.__flowExportProject()</code>(꺼내기), <code>__flowImportProject()</code>(넣기), <code>__flowExportPptModel()</code>(PPT), <code>__setEmbeddedMode()</code>(편집/미리보기)를 직접 부릅니다.</li>
+<li><b>순서도 프레임</b>: 상단 표(FAB 체크, 입력칸)와 레인(START / STEP1~n / END, 드래그로 폭 조절)은 <code>project.frame</code> 으로 저장 → content JSON 안에 들어갑니다.</li>
+<li><b>PPT</b>: 화면 요소의 위치·크기를 읽어 브라우저에서 PPT 도형으로 다시 그립니다. 서버를 거치지 않습니다.</li>
+<li><b>이 기기 임시 저장</b>: 서버 저장과 별개로 localStorage 에 자동 저장 → 새로고침 후 복구 배너.</li>
+</ul>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 순서도만 iframe</b> — 순서도 편집기는 캔버스·드래그·확대 등 자체 코드와 CSS 가 큰 독립 프로그램입니다. 같은 페이지에 섞으면 CSS·전역 변수가 충돌합니다. iframe 은 별도 문서라 격리되고, 한 문서에 순서도를 여러 장 넣어도 서로 간섭하지 않습니다. 예전엔 base64 로 HTML 안에 박혀 있던 것을 파일로 분리해 고치기 쉬워졌습니다.</p>
+<p><b>왜 postMessage 가 아니라 함수 직접 호출</b> — 같은 서버 주소(same-origin)라 부모가 iframe 의 window 에 직접 접근할 수 있습니다. 메시지를 주고받는 것보다 코드가 짧고, 값을 바로 돌려받습니다.</p>
+<p><b>왜 PPT 를 브라우저에서</b> — 화면에 그려진 위치를 그대로 쓰는 게 가장 정확하고, 서버에 PPT 라이브러리·폰트를 깔 필요가 없습니다.</p>
+<p><b>왜 localStorage 임시 저장</b> — 서버 저장 전에 탭이 닫혀도 작업이 남게 하려는 것입니다. 이 브라우저에만 있으므로 다른 PC 에서는 안 보입니다. (예전에 있던 서버 임시 저장 표 sop_drafts 는 쓰이지 않아 마이그레이션 002 로 지웠습니다.)</p>
+</div>
+
+<h2 id="c25"><span class="part">5부 · 화면</span>25. 저장 버튼을 누르면 (화면 쪽 이야기)</h2>
+<p>📍 <code>sopstudio.html:4205</code> <code>libSaveCurrent</code></p>
+<ol>
+<li>순서도 iframe 들에서 최신 데이터를 꺼내 문서 JSON 을 만듭니다. 번호가 비었으면 막습니다.</li>
+<li><b>라이브러리에서 연 문서면</b> (<code>libOpenId</code> 있음):
+  <ul><li>화면의 번호가 열 때와 다르면 → "번호를 바꿀까요?" 확인 → <code>PATCH …/number</code> 먼저 (423 이면 "편집 중", 409 면 "이미 쓰는 번호")</li>
+  <li><code>PUT /api/sops/{id}</code> + <code>base_version_no</code>(열었을 때 버전)</li></ul></li>
+<li><b>새 문서면</b> → <code>POST /api/sops</code>. 409 sop_no_taken 이면 "그 문서의 새 버전으로 저장할까요?" → 예 → 그 id 로 PUT (base=null).</li>
+<li><b>성공</b> → 열린 문서 id·번호·버전 갱신, 새 문서였으면 편집 잠금 잡기, 사이드바 다시 읽기, 토스트(경고 문구 있으면 10초).</li>
+<li><b>실패</b> → 409 version_conflict: "다른 사람이 vN 을 먼저 저장했습니다. 다시 불러올까요?" / 400 sop_no_mismatch / 404 / 그 외.</li>
+</ol>
+<p>열 때는 <code>GET /api/sops/{id}</code> → 응답의 <code>content</code> 로 화면 복원, <code>version_no</code> 를 base 로 기억, 이어서 <code>POST …/lock</code> 으로 잠금, 성공하면 30초마다 하트비트. 페이지를 떠날 때(<code>pagehide</code>) <code>keepalive</code> fetch 로 잠금을 풉니다.</p>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 번호 변경을 저장 전에 따로</b> — 21장의 "저장은 id 로, 번호 변경은 다른 문으로" 원칙 때문입니다. 번호 변경은 참조하는 다른 문서에 영향을 주므로 사용자에게 확인을 받습니다.</p>
+<p><b>왜 409 에서 "다시 불러오기" 만 제안하나</b> — 두 사람의 변경을 자동으로 합치는 기능은 복잡하고 틀리기 쉽습니다. 취소를 누르면 화면은 그대로 두니, 원본 JSON 으로 내려받아 두었다가 옮겨 적을 수 있습니다.</p>
+</div>
+
+<!-- ============================================================ 6부 -->
+<h2 id="c26"><span class="part">6부 · 앞으로</span>26. 사용자 식별 · 헤더 · SSO</h2>
+<p><b>헤더</b>는 요청에 붙는 이름표들입니다. <code>Content-Type</code>, <code>Cookie</code>, <code>Authorization</code> 처럼 HTTP 표준으로 정해진 것도 있고, <code>X-User</code> 처럼 우리가 지은 것도 있습니다. GET 이든 POST 든 모든 요청에 붙습니다.</p>
+<p><b>지금</b>: 브라우저가 prompt 로 받은 이름을 X-User 에 넣습니다. 스스로 입력한 이름이라 아무 이름이나 댈 수 있습니다. "누가 저장했나" 기록용일 뿐 보안 장치가 아닙니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 250" role="img" aria-label="브라우저가 보내는 헤더와 SSO 프록시가 덧붙인 헤더가 어느 구간에서 보이는지 비교"><defs><marker id="m16d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m16acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m16warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m16ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="20" y="80" width="200" height="80" rx="8" class="bx "/><text x="120.0" y="116" text-anchor="middle" class="t">브라우저</text><text x="120.0" y="134" text-anchor="middle" class="s">개발자 도구 Network 탭</text><rect x="400" y="80" width="200" height="80" rx="8" class="bx dash"/><text x="500.0" y="116" text-anchor="middle" class="t">SSO 프록시</text><text x="500.0" y="134" text-anchor="middle" class="s">로그인 확인 + 헤더 추가</text><rect x="780" y="80" width="200" height="80" rx="8" class="bx acc"/><text x="880.0" y="116" text-anchor="middle" class="t">우리 서버</text><text x="880.0" y="134" text-anchor="middle" class="s">current_user 가 읽음</text><polyline points="220,120 400,120" class="ln " marker-end="url(#m16d)"/><text x="310" y="110" text-anchor="middle" class="s lb">X-User: 홍길동 · Cookie</text><polyline points="600,120 780,120" class="ln acc" marker-end="url(#m16acc)"/><text x="690" y="110" text-anchor="middle" class="s lb">X-User + X-Emp-No: 12345</text><polyline points="220,185 400,185" class="ln acc"/><text x="310" y="205" text-anchor="middle" class="s">개발자 도구에 보이는 구간</text><polyline points="600,185 780,185" class="ln acc"/><text x="690" y="205" text-anchor="middle" class="s">서버만 보는 구간 (프록시가 붙인 헤더)</text><text x="500" y="40" text-anchor="middle" class="s">※ 헤더 이름 X-Emp-No 는 예시. 회사 SSO 가 실제로 붙이는 이름을 확인해 USER_HEADER 에 넣습니다</text></svg><figcaption>SSO 프록시가 붙이는 헤더는 브라우저를 떠난 <b>뒤에</b> 추가되므로 개발자 도구로는 볼 수 없습니다. 서버가 받은 헤더를 직접 찍어 봐야 이름을 알 수 있습니다. 브라우저가 보내는 값(X-User)은 누구나 바꿀 수 있고, 프록시가 붙이는 값은 프록시가 덮어쓰므로 믿을 수 있습니다.</figcaption></figure>
+<p><b>SSO</b>(Single Sign-On)는 회사 계정으로 한 번 로그인하면 사내 시스템을 다 쓰는 방식입니다. 보통 서버 앞의 프록시가 로그인을 확인하고 사번 같은 정보를 헤더로 붙여 넘겨 줍니다.</p>
+<ul>
+<li>헤더 이름을 알면 <code>.env</code> 의 <code>USER_HEADER=그이름</code> 한 줄로 끝. 코드는 그대로.</li>
+<li>확인 방법: 회사 서버에 "받은 헤더를 그대로 돌려주는" 진단용 API 를 잠깐 두고 접속해 봅니다. 개발자 도구로는 볼 수 없습니다(그림).</li>
+<li>그다음 할 일: 프론트의 prompt·X-User 제거, 서버의 "바디 이름 우선" 제거(<a href="#c32">32장</a>).</li>
+</ul>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 지금 이렇게 임시로</b> — SSO 헤더 이름이 확정되지 않은 상태에서도 저장자·잠금 기능을 만들고 시험할 수 있어야 했습니다. 사용자 읽기를 <code>current_user</code> 한 함수에 모아 두었으므로, SSO 가 정해지면 그 함수(또는 USER_HEADER 값)만 바뀝니다.</p>
+</div>
+
+<h2 id="c27"><span class="part">6부 · 앞으로</span>27. 권한 체계 도입</h2>
+<div class="two">
+<div class="card"><h4>인증 (Authentication)</h4><p>이 사람이 <b>누구</b>인가? → SSO 담당. 우리는 헤더만 읽음</p></div>
+<div class="card"><h4>인가 (Authorization)</h4><p>이 사람이 <b>무엇을</b> 할 수 있나? → 우리 앱 = 권한 체계</p></div>
+</div>
+<p>인증을 믿을 수 없으면 인가도 의미가 없으니 <b>SSO 헤더 확정이 먼저</b>입니다.</p>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 280" role="img" aria-label="요청이 정문 검사와 방문 검사를 차례로 통과해야 API 함수에 도달하고, 각 단계에서 403 으로 빠지는 흐름"><defs><marker id="m17d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m17acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m17warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m17ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="10" y="70" width="140" height="70" rx="8" class="bx "/><text x="80.0" y="101" text-anchor="middle" class="t">PUT /api/sops/x</text><text x="80.0" y="119" text-anchor="middle" class="s">사번 헤더</text><rect x="200" y="50" width="230" height="110" rx="8" class="bx acc"/><text x="315.0" y="85" text-anchor="middle" class="t">정문: API_GUARD</text><text x="315.0" y="103" text-anchor="middle" class="s mono">require_role("sop","viewer")</text><text x="315.0" y="119" text-anchor="middle" class="s">main.py · 모든 SOP API</text><text x="315.0" y="135" text-anchor="middle" class="s">user_roles 조회</text><rect x="480" y="50" width="230" height="110" rx="8" class="bx acc"/><text x="595.0" y="85" text-anchor="middle" class="t">방문: 함수 파라미터</text><text x="595.0" y="103" text-anchor="middle" class="s mono">require_role("sop","editor")</text><text x="595.0" y="119" text-anchor="middle" class="s">sops.py · 이 API 만</text><text x="595.0" y="135" text-anchor="middle" class="s">(같은 요청이라 1번만 조회)</text><rect x="760" y="70" width="220" height="70" rx="8" class="bx ok"/><text x="870.0" y="101" text-anchor="middle" class="t">save_document 본문</text><text x="870.0" y="119" text-anchor="middle" class="s">여기까지 와야 저장</text><polyline points="150,105 200,105" class="ln " marker-end="url(#m17d)"/><polyline points="430,105 480,105" class="ln " marker-end="url(#m17d)"/><text x="455" y="95" text-anchor="middle" class="s lb">통과</text><polyline points="710,105 760,105" class="ln " marker-end="url(#m17d)"/><text x="735" y="95" text-anchor="middle" class="s lb">통과</text><rect x="200" y="205" width="230" height="56" rx="8" class="bx warn"/><text x="315.0" y="229" text-anchor="middle" class="t">403 forbidden</text><text x="315.0" y="247" text-anchor="middle" class="s">viewer 도 아님</text><rect x="480" y="205" width="230" height="56" rx="8" class="bx warn"/><text x="595.0" y="229" text-anchor="middle" class="t">403 forbidden</text><text x="595.0" y="247" text-anchor="middle" class="s">viewer 지만 editor 아님</text><polyline points="315,160 315,205" class="ln warn" marker-end="url(#m17warn)"/><polyline points="595,160 595,205" class="ln warn" marker-end="url(#m17warn)"/></svg><figcaption>권한 검사는 API 함수 <b>앞</b>에서 끝나야 합니다. 의존성에서 403 을 던지면 함수 본문은 실행조차 되지 않습니다. 공통 최소 권한은 정문(라우터 전체)에, 더 높은 권한은 해당 API 의 파라미터에 겁니다.</figcaption></figure>
+<h3>① 역할과 표</h3>
+<pre>
+viewer 조회 · editor 작성·저장·잠금 · admin 폐기·번호 변경·권한 관리
+
+CREATE TABLE user_roles (
+    user_id text NOT NULL,      -- SSO 사번
+    module  text NOT NULL,      -- 'sop', 'opl', 'weekly'
+    role    text NOT NULL CHECK (role IN ('viewer','editor','admin')),
+    PRIMARY KEY (user_id, module)
+);
+</pre>
+<h3>② 검사 함수 (app/core/deps.py)</h3>
+<pre>
+RANK = {"viewer": 1, "editor": 2, "admin": 3}
+
+def require_role(module: str, need: str):
+    async def check(user: str = Depends(current_user), conn = Depends(get_conn)) -> str:
+        cur = await conn.execute("SELECT role FROM user_roles WHERE user_id=%s AND module=%s", (user, module))
+        row = await cur.fetchone()
+        if row is None or RANK[row["role"]] &lt; RANK[need]:
+            raise ApiError(403, "forbidden", "권한이 없습니다.")
+        return user                 ← 통과하면 이름을 돌려줌 → current_user 자리를 그대로 대체
+    return check
+</pre>
+<h3>③ 거는 자리</h3>
+<pre>
+# app/main.py — 정문
+API_GUARD = [Depends(require_role("sop", "viewer"))]
+
+# app/sop/sops.py — 방문
+async def save_document(..., user: str = Depends(require_role("sop", "editor")), ...)
+async def retire_document(..., user: str = Depends(require_role("sop", "admin")), ...)
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 새 DB 가 아니라 표 하나</b> — 권한은 같은 DB 의 다른 표와 함께 조회되고(사용자 → 역할), 별도 DB 는 연결·백업·배포를 두 배로 만듭니다.</p>
+<p><b>왜 module 칸</b> — SOP 는 editor 인데 OPL 은 viewer 같은 업무별 권한을 한 표로 표현합니다.</p>
+<p><b>왜 역할(RBAC)인가</b> — 사람마다 "저장 가능, 폐기 불가 …" 를 일일이 주면 관리가 안 됩니다. 역할 몇 개를 정의하고 사람에게 역할을 줍니다. 문서 단위 권한("이 SOP 는 A팀만")은 정말 필요해질 때 추가합니다.</p>
+<p><b>왜 Depends 로</b> — 의존성에서 403 을 던지면 함수 본문이 실행되지 않으므로, 검사를 빠뜨린 채 저장이 일어날 수 없습니다. <code>current_user</code> 를 품고 있으니 API 에는 <code>require_role</code> 하나만 적으면 되고, 요청당 한 번만 실행됩니다.</p>
+<p><b>왜 프론트에서 버튼만 숨기면 안 되나</b> — 버튼을 숨겨도 개발자 도구에서 API 를 직접 부를 수 있습니다. 프론트는 <code>GET /api/me</code> 로 역할을 받아 <b>보여 주기만</b> 조절하고, 막는 것은 반드시 서버입니다.</p>
+</div>
+<p><b>추천 순서</b>: SSO 헤더 확인 → USER_HEADER 설정 + 바디 이름 우선 제거 → user_roles + require_role → 폐기·번호 변경·저장부터 적용 → /api/me 로 버튼 제어.</p>
+
+<h2 id="c28"><span class="part">6부 · 앞으로</span>28. 접근 기록(방문 기록) 남기기</h2>
+<p>"누가, 언제, 어떤 API 를, 결과가 어땠나" 는 모든 요청에 해당하므로 10장의 미들웨어 자리가 맞습니다.</p>
+<pre>
+CREATE TABLE api_access_log (
+    id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(),
+    user_id text NOT NULL, method text NOT NULL, path text NOT NULL,
+    status int NOT NULL, elapsed_ms int NOT NULL
+);
+
+# log_and_limit 의 finally 안에 추가
+try:
+    async with db.pool.connection() as conn:
+        await conn.execute("INSERT INTO api_access_log (user_id, method, path, status, elapsed_ms) "
+                           "VALUES (%s,%s,%s,%s,%s)",
+                           (current_user(request), request.method, request.url.path, status, int(elapsed_ms)))
+except Exception:
+    log.exception("접근 기록 실패")      ← 기록 실패가 본 요청을 실패시키면 안 됨
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 미들웨어</b> — API 마다 넣으면 빠뜨립니다. 미들웨어는 413 처럼 API 까지 못 간 요청도 기록합니다.</p>
+<p><b>왜 Depends 를 못 쓰고 직접 부르나</b> — 미들웨어는 라우팅·Depends 보다 바깥이라 그 장치를 쓸 수 없습니다. <code>current_user(request)</code> 는 그냥 함수라 직접 불러도 됩니다.</p>
+<p><b>더 가벼운 대안</b> — 지금 로그 한 줄에 사용자 이름만 추가해 회사 로그 수집기에서 검색. 통계 화면이 필요해질 때 DB 로. DB 로 가면 쌓이기만 하므로 보관 기간(예: 90일) 정리를 같이 정하세요.</p>
+</div>
+
+<h2 id="c29"><span class="part">6부 · 앞으로</span>29. 새 업무(OPL, 주간보고) 추가하기</h2>
+<ol>
+<li><code>sql/opl/schema.sql</code> (표 이름은 <code>opl_</code> 로 시작) → <code>apply_schema.py</code> 의 <code>MODULES</code> 에 <code>("opl", "opl_items")</code></li>
+<li><code>app/opl/</code>: <code>__init__.py</code>(router 묶기), API 파일, <code>schemas.py</code></li>
+<li><code>main.py</code>: <code>app.include_router(opl_router, prefix="/api/opl", dependencies=API_GUARD)</code></li>
+<li><code>static/opl/*.html</code></li>
+</ol>
+<p><code>core/</code> 의 DB 연결, current_user(나중엔 require_role), 오류 모양, 접근 기록은 그대로 따라옵니다. 이것이 3장에서 core 를 나눈 이유가 실제로 쓰이는 장면입니다.</p>
+
+<!-- ============================================================ 7부 -->
+<h2 id="c30"><span class="part">7부 · 운영</span>30. Docker · 배포</h2>
+<figure class="fig"><svg class="dg" viewBox="0 0 1000 400" role="img" aria-label="회사 배포 경로(git, Jenkins, 이미지, 쿠버네티스, 프로브, 회사 DB)와 로컬 개발 경로 비교"><defs><marker id="m18d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk d"/></marker><marker id="m18acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk acc"/></marker><marker id="m18warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker><marker id="m18ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk ok"/></marker></defs><rect x="10" y="20" width="980" height="200" rx="12" class="zone acc"/><text x="22" y="40" text-anchor="start" class="zt">회사 (HCP / Kubernetes)</text><rect x="30" y="70" width="120" height="60" rx="8" class="bx "/><text x="90.0" y="96" text-anchor="middle" class="t">git push</text><text x="90.0" y="114" text-anchor="middle" class="s">main</text><rect x="190" y="70" width="150" height="60" rx="8" class="bx "/><text x="265.0" y="96" text-anchor="middle" class="t">Jenkins</text><text x="265.0" y="114" text-anchor="middle" class="s">Dockerfile 로 빌드</text><rect x="380" y="55" width="210" height="90" rx="8" class="bx acc"/><text x="485.0" y="80" text-anchor="middle" class="t">이미지</text><text x="485.0" y="98" text-anchor="middle" class="s mono">python:3.12-slim</text><text x="485.0" y="114" text-anchor="middle" class="s mono">+ requirements · app/</text><text x="485.0" y="130" text-anchor="middle" class="s mono">+ static/ sql/ .env</text><rect x="630" y="55" width="170" height="90" rx="8" class="bx "/><text x="715.0" y="80" text-anchor="middle" class="t">Pod (컨테이너)</text><text x="715.0" y="98" text-anchor="middle" class="s">deployment.yaml 대로</text><text x="715.0" y="114" text-anchor="middle" class="s">python app.py</text><text x="715.0" y="130" text-anchor="middle" class="s">:5000 · 비루트</text><rect x="840" y="60" width="135" height="80" rx="8" class="bx "/><text x="907.5" y="96" text-anchor="middle" class="t">회사 DB</text><text x="907.5" y="114" text-anchor="middle" class="s">10.61.41.6:5432</text><polyline points="150,100 190,100" class="ln " marker-end="url(#m18d)"/><polyline points="340,100 380,100" class="ln " marker-end="url(#m18d)"/><polyline points="590,100 630,100" class="ln " marker-end="url(#m18d)"/><polyline points="800,100 840,100" class="ln " marker-end="url(#m18d)"/><text x="820" y="90" text-anchor="middle" class="s lb">SQL</text><rect x="560" y="160" width="130" height="48" rx="8" class="bx dash"/><text x="625.0" y="180" text-anchor="middle" class="t">플랫폼 probe</text><text x="625.0" y="198" text-anchor="middle" class="s">appReady → 200?</text><polyline points="690,184 715,184 715,140" class="ln dash" marker-end="url(#m18d)"/><rect x="760" y="160" width="215" height="48" rx="8" class="bx dash"/><text x="867.5" y="180" text-anchor="middle" class="t">Ingress / SSO</text><text x="867.5" y="198" text-anchor="middle" class="s">→ 200 아니면 503</text><polyline points="800,160 760,140" class="ln dash" marker-end="url(#m18d)"/><rect x="10" y="240" width="980" height="145" rx="12" class="zone "/><text x="22" y="260" text-anchor="start" class="zt">내 PC (로컬 개발)</text><rect x="30" y="285" width="220" height="70" rx="8" class="bx "/><text x="140.0" y="316" text-anchor="middle" class="t">docker compose up -d --wait</text><text x="140.0" y="334" text-anchor="middle" class="s">db 컨테이너만 (postgres:17)</text><rect x="300" y="285" width="200" height="70" rx="8" class="bx "/><text x="400.0" y="316" text-anchor="middle" class="t">db 컨테이너</text><text x="400.0" y="334" text-anchor="middle" class="s">localhost:5432</text><rect x="560" y="285" width="220" height="70" rx="8" class="bx acc"/><text x="670.0" y="316" text-anchor="middle" class="t">python app.py</text><text x="670.0" y="334" text-anchor="middle" class="s">내 PC 파이썬 · :8000</text><rect x="820" y="285" width="150" height="70" rx="8" class="bx "/><text x="895.0" y="316" text-anchor="middle" class="t">브라우저</text><text x="895.0" y="334" text-anchor="middle" class="s">localhost:8000</text><polyline points="250,320 300,320" class="ln " marker-end="url(#m18d)"/><polyline points="560,320 500,320" class="ln " marker-end="url(#m18d)"/><text x="530" y="310" text-anchor="middle" class="s lb">SQL</text><polyline points="820,320 780,320" class="ln " marker-end="url(#m18d)"/></svg><figcaption>회사에서는 Dockerfile 이 만든 이미지 안의 파이썬과 .env 로 실행되고, 플랫폼이 준비 확인 주소를 두드려 200 을 받아야 트래픽이 들어옵니다. 로컬에서는 DB 만 Docker 로 띄우고 앱은 내 PC 파이썬으로 돌립니다.</figcaption></figure>
+<div class="tbl"><table>
+<tr><th>용어</th><th>뜻</th></tr>
+<tr><td>이미지</td><td>파이썬 + 라이브러리 + 코드를 굳힌 상자 (붕어빵 틀)</td></tr>
+<tr><td>컨테이너</td><td>이미지를 실행한 것 (붕어빵). 내 PC 의 환경변수를 물려받지 않음</td></tr>
+<tr><td>Dockerfile</td><td>우리 이미지 만드는 순서. 회사 배포용</td></tr>
+<tr><td>docker-compose.yml</td><td>여러 컨테이너를 한 번에 띄우는 설명서. 로컬 전용</td></tr>
+</table></div>
+<pre>
+# 로컬
+docker compose up -d --wait                  DB 만 (app 은 profiles: ["app"] 라 기본 제외)
+python app.py                                → http://localhost:8000
+docker compose --profile app up -d --build   DB + 앱 컨테이너 (앱은 5000)
+docker compose down                          끄기 (-v 를 붙이면 DB 데이터까지 삭제)
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 Dockerfile 의 파이썬을 쓰나</b> — <code>FROM python:3.12-slim</code> 이 공식 이미지를 받아 그 안에 설치합니다. 어느 서버에서 돌려도 같은 파이썬·같은 라이브러리라 "내 PC 에선 됐는데" 가 없어집니다.</p>
+<p><b>왜 requirements 를 먼저 COPY</b> — Docker 는 단계별로 결과를 캐시합니다. 자주 바뀌는 코드보다 덜 바뀌는 라이브러리 설치를 먼저 두면 코드만 고쳤을 때 설치 단계를 건너뜁니다.</p>
+<p><b>왜 비루트 사용자</b> — 컨테이너가 뚫려도 root 권한이 없게 하는 회사 보안 규정입니다.</p>
+<p><b>왜 ENV PORT=5000</b> — 회사 플랫폼 규칙이 5000 입니다. 맥은 AirPlay 가 5000 을 쓰므로 로컬은 .env 의 8000 을 씁니다(4장의 우선순위 덕분에 둘이 충돌하지 않음).</p>
+<p><b>왜 .env 를 이미지에 넣나</b> — 회사 규칙(설정은 .env). 대신 GitHub 저장소가 공개라면 실제 비밀번호를 .env 에 넣으면 안 됩니다.</p>
+<p><b>왜 준비 확인 주소는 DB 를 안 보나</b> — 플랫폼은 이 주소가 실패하면 컨테이너를 다시 켭니다. DB 가 잠깐 흔들릴 때마다 앱까지 재시작되면 오히려 장애가 커집니다. DB 상태는 <code>/api/health</code>(죽었으면 503)로 따로 봅니다.</p>
+<p><b>503 의 정체</b> — 회사 ingress 는 앱이 "준비됨" 이 아니면 503 을 냅니다. 포트가 다르거나 준비 확인 주소가 404 면 앱이 멀쩡해도 503 이 납니다. 주소는 대소문자를 구분합니다.</p>
+</div>
+
+<h2 id="c31"><span class="part">7부 · 운영</span>31. 로그 · stdout</h2>
+<p>프로그램의 기본 출력 통로는 stdin(입력), stdout(일반 출력), stderr(오류 출력) 셋입니다. 터미널에선 둘 다 화면에 보이지만, 컨테이너 플랫폼은 통로별로 모아 저장합니다.</p>
+<pre>
+logging.basicConfig(level="INFO", format="%(asctime)s %(levelname)s %(message)s", stream=sys.stdout)   📍 main.py:45
+log = logging.getLogger("sop")
+log.info("saved %s v%s nodes=%s … by %s", sop_no, n, …)     ← 저장마다 한 줄
+</pre>
+<div class="why"><span class="whytag">왜?</span>
+<p><b>왜 stdout</b> — logging 기본은 stderr 라, 플랫폼에 따라 INFO 로그가 전부 "오류" 로 분류됩니다. 컨테이너에서는 파일이 아니라 표준 출력에 쓰는 것이 관례입니다(파일은 컨테이너가 바뀌면 사라짐).</p>
+<p><b>왜 PYTHONUNBUFFERED=1</b> — 파이썬이 출력을 모았다가 한꺼번에 내보내지 않게 합니다. 실시간으로 보이고, 갑자기 꺼져도 마지막 로그가 남습니다.</p>
+<p><b>왜 "%s" 자리 표시자</b> — <code>log.info("…%s", x)</code> 는 그 레벨이 꺼져 있으면 문자열을 아예 만들지 않습니다. f-string 은 항상 만듭니다.</p>
+<p><b>왜 비밀번호를 가리나</b> — 시작 로그에 DB 주소를 찍을 때 <code>mask_password</code> 로 <code>****</code> 처리합니다. 로그는 여러 사람이 봅니다.</p>
+</div>
+
+<h2 id="c32"><span class="part">7부 · 운영</span>32. 지금 알려진 문제 · 할 일</h2>
+<div class="tbl"><table>
+<tr><th>항목</th><th>내용</th><th>위치</th></tr>
+<tr><td><span class="pill warn">보안</span> 바디 이름 우선</td><td>저장·생성·번호변경·잠금·해제가 헤더보다 바디의 <code>saved_by</code>/<code>user</code> 를 먼저 씀. SSO 를 붙여도 바디로 남의 이름을 댈 수 있음 → <code>who = user</code> 로</td><td><code>sops.py:359, :400, :437</code> · <code>locks.py:48, :122</code></td></tr>
+<tr><td><span class="pill warn">확인</span> /health 없음</td><td>main.py 에 <code>/health</code> 가 없는데 Dockerfile HEALTHCHECK 는 <code>/health</code> 를 두드림 → 로컬 Docker 에서 unhealthy 표시. 쿠버네티스는 Dockerfile HEALTHCHECK 를 안 쓰므로 회사엔 영향 없음</td><td><code>main.py:126</code> · <code>Dockerfile:46</code></td></tr>
+<tr><td><span class="pill warn">확인</span> 준비 확인 주소</td><td>지금 <code>/api/admin/appReady</code> 하나. 플랫폼이 실제로 두드리는 주소·대소문자와 같은지</td><td><code>main.py:126</code></td></tr>
+<tr><td>사용자 prompt</td><td>SSO 가 붙으면 prompt·X-User 제거</td><td><code>sopstudio.html:3759, :3801</code></td></tr>
+<tr><td>회사 .env</td><td>옛 값 <code>STATIC_INDEX=SOP_STUDIO.html</code> 이 남아 있으면 "/" 404</td><td>회사 .env</td></tr>
+<tr><td>migrations 001/002</td><td>지금 schema.sql 로 만든 DB 에선 아무 일 안 함. 옛 DB 가 없으면 지워도 됨</td><td><code>sql/sop/migrations/</code></td></tr>
+<tr><td>.DS_Store</td><td>맥이 만드는 파일이 git 에 올라감 → .gitignore</td><td><code>.gitignore</code></td></tr>
+</table></div>
+
+<!-- ============================================================ 부록 -->
+<h2 id="a1"><span class="part">부록</span>A. 문법 사전</h2>
+<div class="tbl"><table>
+<tr><th>문법</th><th>뜻</th><th>이 프로젝트에서</th></tr>
+<tr><td><code>import x</code> / <code>from a import b</code></td><td>다른 파일의 것을 가져옴. 폴더의 <code>__init__.py</code> 가 먼저 실행됨</td><td>app/__init__.py 가 .env 를 올림</td></tr>
+<tr><td><code>if __name__ == "__main__":</code></td><td>직접 실행했을 때만</td><td>app.py, apply_schema.py</td></tr>
+<tr><td><code>@데코레이터</code></td><td>아래 함수를 어딘가에 등록/감쌈</td><td>@router.put, @app.middleware, @asynccontextmanager</td></tr>
+<tr><td><code>async def</code> / <code>await</code></td><td>기다리는 동안 다른 일을 하는 함수 / 기다리는 지점</td><td>모든 API, DB 호출</td></tr>
+<tr><td><code>async with A as x:</code></td><td>A 를 열고, 블록이 끝나면(오류여도) 닫음</td><td>pool.connection(), conn.transaction()</td></tr>
+<tr><td><code>yield</code></td><td>값을 내주고 멈춤, 나중에 이어서</td><td>get_conn, lifespan, iter_sop_nodes</td></tr>
+<tr><td><code>x: str</code>, <code>-&gt; str</code></td><td>타입 힌트. FastAPI 는 이걸 읽어 동작</td><td>request: Request, body: SaveRequest</td></tr>
+<tr><td><code>A[B]</code></td><td>B 를 담은/내주는 A</td><td>list[str], AsyncIterator[AsyncConnection]</td></tr>
+<tr><td><code>X | None</code></td><td>X 또는 없음</td><td>base_version_no: int | None</td></tr>
+<tr><td><code>class M(BaseModel)</code></td><td>pydantic 데이터 모양</td><td>SaveRequest, SaveResponse</td></tr>
+<tr><td><code>Depends(f)</code></td><td>요청마다 f 를 실행해 그 결과로 칸을 채움</td><td>current_user, get_conn</td></tr>
+<tr><td><code>raise E</code></td><td>오류를 던짐 → 위로 올라감</td><td>ApiError(409, …)</td></tr>
+<tr><td><code>try / except / finally</code></td><td>오류 잡기 / 항상 실행</td><td>미들웨어 로그, UniqueViolation</td></tr>
+<tr><td><code>global x</code></td><td>함수 밖의 변수를 바꾸겠다</td><td>db.py 의 pool</td></tr>
+<tr><td><code>a or b</code></td><td>a 가 비었으면 b</td><td>name or "anonymous"</td></tr>
+<tr><td><code>%s</code> (SQL)</td><td>값 자리. 값은 따로 넘김 → SQL 인젝션 방지</td><td>모든 쿼리</td></tr>
+<tr><td><code>FOR UPDATE</code></td><td>읽으면서 행을 잠금, 트랜잭션 끝까지</td><td>저장, 잠금, 번호 변경</td></tr>
+<tr><td><code>RETURNING</code></td><td>INSERT/UPDATE 한 행을 바로 돌려받음</td><td>새 id, saved_at</td></tr>
+</table></div>
+
+<h2 id="a2"><span class="part">부록</span>B. API 목록</h2>
+<div class="tbl"><table>
+<tr><th>메서드</th><th>주소 (/api 아래)</th><th>함수</th><th>성공</th><th>주요 실패</th></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops?status=&amp;q=&amp;area=</code></td><td>list_documents</td><td>200</td><td></td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/by-no/{sop_no}</code></td><td>open_document_by_no</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/{id}</code></td><td>open_document</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">POST</span></td><td><code>/sops</code></td><td>create_document</td><td>201</td><td>422, 409 sop_no_taken</td></tr>
+<tr><td><span class="verb">PUT</span></td><td><code>/sops/{id}</code></td><td>save_document</td><td>201</td><td>404, 400, 409 version_conflict, 422</td></tr>
+<tr><td><span class="verb">PATCH</span></td><td><code>/sops/{id}/number</code></td><td>rename_document</td><td>200</td><td>404, 409, 422, 423</td></tr>
+<tr><td><span class="verb">DELETE</span></td><td><code>/sops/{id}</code></td><td>retire_document</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/{id}/referenced-by</code></td><td>list_referenced_by</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/{id}/versions</code></td><td>list_versions</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/{id}/versions/{n}</code></td><td>open_version</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">GET</span></td><td><code>/sops/{id}/versions/{a}/diff/{b}</code></td><td>diff_versions</td><td>200</td><td>404</td></tr>
+<tr><td><span class="verb">POST</span></td><td><code>/sops/{id}/lock</code></td><td>acquire_lock</td><td>200</td><td>404, 423</td></tr>
+<tr><td><span class="verb">DELETE</span></td><td><code>/sops/{id}/lock</code></td><td>release_lock</td><td>200</td><td>404</td></tr>
+</table></div>
+<p>그 밖에 <code>/api/health</code>(DB 확인), <code>/api/admin/appReady</code>(프로세스만), <code>/</code>(편집기 HTML), <code>/static/…</code>, <code>/docs</code>(자동 API 설명서).</p>
+
+<h2 id="a3"><span class="part">부록</span>C. 오류 코드</h2>
+<div class="tbl"><table>
+<tr><th>HTTP</th><th>뜻</th><th>code 예</th></tr>
+<tr><td>400</td><td>잘못된 요청</td><td>sop_no_mismatch</td></tr>
+<tr><td>401</td><td>누군지 모름</td><td>(인증 붙이면)</td></tr>
+<tr><td>403</td><td>누군지 알지만 권한 없음</td><td>(권한 붙이면) forbidden</td></tr>
+<tr><td>404</td><td>없음</td><td>not_found, http_error</td></tr>
+<tr><td>409</td><td>충돌</td><td>version_conflict, sop_no_taken</td></tr>
+<tr><td>413</td><td>너무 큼</td><td>payload_too_large</td></tr>
+<tr><td>422</td><td>형식 오류</td><td>validation_error, invalid_document</td></tr>
+<tr><td>423</td><td>잠김</td><td>locked</td></tr>
+<tr><td>500</td><td>서버 내부 오류</td><td>internal_error</td></tr>
+<tr><td>503</td><td>서비스 불가</td><td>/api/health 의 DB down, 또는 ingress 가 앱을 못 찾음</td></tr>
+</table></div>
+
+<h2 id="a4"><span class="part">부록</span>D. 용어집</h2>
+<div class="tbl"><table>
+<tr><th>용어</th><th>뜻</th></tr>
+<tr><td>FastAPI</td><td>주소 ↔ 파이썬 함수를 연결하는 웹 프레임워크</td></tr>
+<tr><td>uvicorn</td><td>HTTP 요청을 받아 FastAPI 에 넘기는 웹서버</td></tr>
+<tr><td>Starlette</td><td>FastAPI 밑바닥의 작은 프레임워크 (Request, 미들웨어)</td></tr>
+<tr><td>psycopg / psycopg_pool</td><td>파이썬 ↔ PostgreSQL 라이브러리 / 연결 풀</td></tr>
+<tr><td>pydantic</td><td>데이터 모양 검사 라이브러리</td></tr>
+<tr><td>엔드포인트 / 라우터</td><td>메서드+주소 하나 / 그 묶음</td></tr>
+<tr><td>미들웨어</td><td>모든 요청이 지나는 앞뒤 문</td></tr>
+<tr><td>의존성 (Depends)</td><td>API 함수 전에 FastAPI 가 대신 실행해 결과를 넣어 주는 함수</td></tr>
+<tr><td>연결 풀</td><td>DB 연결을 미리 열어 두고 빌려주는 창구</td></tr>
+<tr><td>트랜잭션</td><td>전부 성공 아니면 전부 취소인 SQL 묶음</td></tr>
+<tr><td>낙관적 동시성</td><td>막지 않고 저장 순간에 버전으로 충돌 확인</td></tr>
+<tr><td>마이그레이션 / 멱등</td><td>기존 DB 모양 바꾸기 / 몇 번 해도 결과 같음</td></tr>
+<tr><td>PK / FK</td><td>행의 고유 번호 / 다른 표의 PK 를 가리키는 칸</td></tr>
+<tr><td>CASCADE / SET NULL</td><td>부모가 지워지면 같이 지움 / 이 칸만 비움</td></tr>
+<tr><td>jsonb / GIN</td><td>PostgreSQL 의 JSON 타입 / JSON·배열·부분검색용 인덱스</td></tr>
+<tr><td>프록시 / SSO</td><td>중간 전달 서버 / 한 번 로그인으로 여러 시스템</td></tr>
+<tr><td>probe / 헬스체크</td><td>플랫폼이 살아 있나 두드려 보는 주소</td></tr>
+<tr><td>TTL / 하트비트</td><td>유효 시간 / 살아 있다는 주기적 신호</td></tr>
+</table></div>
+
+<footer>함께 보면 좋은 문서: <code>docs/BACKEND_REFERENCE.html</code> (컬럼·함수 하나하나) · <code>docs/DB_SCHEMA.md</code> · <code>docs/SQL_BASICS.md</code> · <code>docs/CODE_WALKTHROUGH.md</code> · <code>README.md</code></footer>
+</main>
+</div>
+<script>
+(function(){
+  const links=[...document.querySelectorAll('nav a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id));}})},{rootMargin:'-15% 0px -75% 0px'});
+  secs.forEach(s=>io.observe(s));
+})();
+</script>
+</body>
+</html>
